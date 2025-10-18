@@ -11,34 +11,34 @@ Specific filter:
 Server: can be selected from the currently available connections of the Object Explorer
 Context: MenuItemContext enum - except the value MenuItemContext.All
 Target Database Object Filter: Depends on the value of "Context" - you have to select an exact db object of every "intermediate" and the "terminal" level of the context.
-	"Server":
+	"Server": NavigationContext = "Server[@Name='machine-name']"
 		nothing (Server has been selected)
-	"Server/DatabasesFolder":
+	"Server/DatabasesFolder": NavigationContext = "Server[@Name='machine-name']/Folder[@Name='Databases' and @Type='Database']"
 		nothig (Server has been selected)
-	"Server/Database": 
+	"Server/Database": NavigationContext = "Server[@Name='machine-name']/Database[@Name='database-name']"
 		Database
-	"Server/Database/Table":
+	"Server/Database/Table": NavigationContext = "Server[@Name='machine-name']/Database[@Name='database-name']/Table[@Name='table-name' and @Schema='schema-name']"
 		Database
 		Table
-	"Server/Database/Table/Column":
+	"Server/Database/Table/Column": NavigationContext = "Server[@Name='machine-name']/Database[@Name='database-name']/Table[@Name='table-name' and @Schema='schema-name']/Column[@Name='column-name']"
 		Database
 		Table
 		Column
-	"Server/Database/UserTablesFolder":
+	"Server/Database/UserTablesFolder": NavigationContext = "Server[@Name='machine-name']/Database[@Name='database-name']/Folder[@Name='UserTables' and @Type='Table']"
 		Database
-	"Server/Database/View":
+	"Server/Database/View": NavigationContext = "Server[@Name='machine-name']/Database[@Name='database-name']/View[@Name='view-name' and @Schema='dbo']"
 		Database
 		View
-	"Server/Database/StoredProceduresFolder":
+	"Server/Database/StoredProceduresFolder": NavigationContext = "Server[@Name='machine-name']/Database[@Name='database-name']/Folder[@Name='StoredProcedures' and @Type='StoredProcedure']"
 		Database
-	"Server/Database/StoredProcedure":
+	"Server/Database/StoredProcedure": NavigationContext = "Server[@Name='machine-name']/Database[@Name='database-name']/StoredProcedure[@Name='sp-name' and @Schema='schema-name']"
 		Database
 		StoredProcedure
-	"Server/JobServer":
+	"Server/JobServer": NavigationContext = "Server[@Name='machine-name']/JobServer"
 		nothing (Server has been selected)
-	"Server/JobServer/JobsFolder":
+	"Server/JobServer/JobsFolder": NavigationContext = "Server[@Name='machine-name']/JobServer/Folder[@Name='Jobs' and @Type='Job']"
 		nothing (Server has been selected)
-	"Server/JobServer/Job":
+	"Server/JobServer/Job": NavigationContext = "Server[@Name='machine-name']/JobServer/Job[@Name='job-name' and @CategoryID='0']" // TODO: what is categoryid?
 		Job
 		
 You have to go through and select something for each level just to make sure that you provide such a database object in your filter which really exists. However, you don't have to include all the levels in your filter what makes the scope of your filter broader.
