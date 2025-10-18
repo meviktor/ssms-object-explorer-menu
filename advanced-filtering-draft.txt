@@ -26,7 +26,7 @@ Target Database Object Filter: Depends on the value of "Context" - you have to s
 		Column
 	"Server/Database/UserTablesFolder": NavigationContext = "Server[@Name='machine-name']/Database[@Name='database-name']/Folder[@Name='UserTables' and @Type='Table']"
 		Database
-	"Server/Database/View": NavigationContext = "Server[@Name='machine-name']/Database[@Name='database-name']/View[@Name='view-name' and @Schema='dbo']"
+	"Server/Database/View": NavigationContext = "Server[@Name='machine-name']/Database[@Name='database-name']/View[@Name='view-name' and @Schema='schema-name']"
 		Database
 		View
 	"Server/Database/StoredProceduresFolder": NavigationContext = "Server[@Name='machine-name']/Database[@Name='database-name']/Folder[@Name='StoredProcedures' and @Type='StoredProcedure']"
