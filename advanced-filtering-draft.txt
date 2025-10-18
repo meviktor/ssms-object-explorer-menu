@@ -1,0 +1,111 @@
+For the MenuItems:
+------------------
+- Current "general" filter could stay: specifies a just a level: All, Server, Database, Table, etc.
+- Maybe extend this enumeration with a new value: Empty- or None?
+	- This could sign that the MenuItem would use the "specific" filter instead of the "general" one
+    - Other option: an enum for the filter type (FilterType.General, FilterType.Specific)
+		- Advantage: you could have both types of filters set and could switch between the two types by changing the setting's value (only on Options grid)
+
+Specific filter:
+----------------
+Server: can be selected from the currently available connections of the Object Explorer
+Context: MenuItemContext enum - except the value MenuItemContext.All
+Target Database Object Filter: Depends on the value of "Context" - you have to select an exact db object of every "intermediate" and the "terminal" level of the context.
+	"Server":
+		nothing (Server has been selected)
+	"Server/DatabasesFolder":
+		nothig (Server has been selected)
+	"Server/Database": 
+		Database
+	"Server/Database/Table":
+		Database
+		Table
+	"Server/Database/Table/Column":
+		Database
+		Table
+		Column
+	"Server/Database/UserTablesFolder":
+		Database
+	"Server/Database/View":
+		Database
+		View
+	"Server/Database/StoredProceduresFolder":
+		Database
+	"Server/Database/StoredProcedure":
+		Database
+		StoredProcedure
+	"Server/JobServer":
+		nothing (Server has been selected)
+	"Server/JobServer/JobsFolder":
+		nothing (Server has been selected)
+	"Server/JobServer/Job":
+		Job
+		
+You have to go through and select something for each level just to make sure that you provide such a database object in your filter which really exists. However, you don't have to include all the levels in your filter what makes the scope of your filter broader.
+Examples:
+	"Server/Database/Table/Column": Create a filter which applies on a column "Id" which is defined in a table called "Bills". If you have other database(s) on the same- or an other server, having a table "Bills" with an "Id" column, this filter will match those columns also.
+		[ ] Server: localhost
+		[ ] Database: Finance
+		[x] Table: dbo.Bills
+		[x] Column: Id
+	It will work also for these examples:
+		(Server=localhost,Database=Results_2025,Table=dbo.Bills,Column=Id)
+		(Server=db.mycompany.com,Database=Results_2023,Table=dbo.Bills,Column=Id)
+	Other example: for every "Id" column, regardless the table, on the "Finance" databse whihch can be on any server
+		[ ] Server: localhost
+		[x] Database: Finance
+		[ ] Table: dbo.Bills
+		[x] Column: Id
+		
+	The filter will be a set of key-value pairs. Only the marked elements will be saved in the dictionary (in the above example: table and column name).
+	The filter itself could be stored in the "query string"(?) format of SQL server.
+	The dictionary could be filled up from this string.
+	Also, when (updating?/)saving the filter, we could (re)construct this query string from the dictionary.
+	
+UI
+--
+
+On AddMenuItem window:
+	Select Context from the dropdown (just like before)
+	Checkbox "use advanced filter":
+		- if the selected context is "All" it will be inactive, otherwise active
+		- it is not checked by default
+		- if it's checked:
+			- Display a set of filter controls
+				- Server: this will be displayed regardless the selected context
+				- Database, Table, Column, View, StoredProcedure, Job: they may or may not appear - depends on the selected context
+				- There is a specific order how the controls will be actvated
+					- Server -> Database -> Table -> Column
+					- Server -> Database -> View
+					- Server -> Database -> StoredProcedure
+					- Server -> Job
+				- Controls look like this: [x] Server: [DropDownList V]
+					- Checkbox specifies if the Server/Database/View/... will be included in the filter
+					- Label displaying the level (Server/Database/View/...)
+					- DropDownList: this has the possible selections on a level (servers, databases on a server, views in a database, columns in a table, etc). Every dropdown starts with an empty, default selected value. If this changes, the "next" level will be activated and its dropdown will be filled with the possible options.
+						- Example - for context "Server/Database/Table":
+							DropDown of the "Server" level displayed with the default empty option.
+							User selects one of the available servers.
+							Control of the "Database" level will be active. Its dropdown will be filled up with the available databases on the selected server.
+							User selects one of the available databases.
+							Control of the "Table" level will be active. Its dropdown will be filled up with the available tables on the selected database.
+							User selects a table.
+				- If you change the selection to default (empty) on one level:
+					- All the "below" levels will become inactive, their dropdowns will be cleared (your selected option & the list of options)
+				- If you change the selection to something else, but NOT DEFAULT on one level:
+					- The "closest below" level's dropdown will be refilled with new values. Selected value will be: default empty.
+					- The "lower" levels (if any): will become inactive, dropdown w/ your selection is cleared
+				- Validation rules:
+					- You have to provide (select) a value for every level
+					- The "terminal" level's checkbox must be checked
+
+On Options Grid:
+	- New option: use advanced filtering - bool
+		- If false, nothing changes
+	New option: advanced filter text - string
+		- Is generated from the user's setup from the AddMenuItem window
+		- It is editable by the user
+			- When saving, check if the edited filter text is in accordance with the selected context
+				- Every level of the selected context (Server/Database/etc.) must appear in the string - if we don't want to filter for a specific level, use an asterisk (*) for the Name
+				- Levels belong to other contexts (e.g. a Job name, when the user selected "Table" as context) must not appear in the filter text
+		- If the user does not use advanced filtering for the menu item, don't need to validate the filter text. On if advanced filtering is used.
