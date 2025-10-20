@@ -71,6 +71,22 @@
     <Compile Include="AddUserDefinedParameter.Designer.cs">
       <DependentUpon>AddUserDefinedParameter.cs</DependentUpon>
     </Compile>
+    <Compile Include="advanced-filtering\AdvancedFilters.cs" />
+    <Compile Include="advanced-filtering\enums\FilterSection.cs" />
+    <Compile Include="advanced-filtering\models\ColumnProperties.cs" />
+    <Compile Include="advanced-filtering\DatabaseObjectFilter.cs" />
+    <Compile Include="advanced-filtering\models\DatabaseProperties.cs" />
+    <Compile Include="advanced-filtering\models\FolderProperties.cs" />
+    <Compile Include="advanced-filtering\models\JobProperties.cs" />
+    <Compile Include="advanced-filtering\models\JobServerProperties.cs" />
+    <Compile Include="advanced-filtering\models\NameProperty.cs" />
+    <Compile Include="advanced-filtering\models\NameSchemaProperties.cs" />
+    <Compile Include="advanced-filtering\models\NameTypeProperties.cs" />
+    <Compile Include="advanced-filtering\models\PropertyBase.cs" />
+    <Compile Include="advanced-filtering\models\ServerProperties.cs" />
+    <Compile Include="advanced-filtering\models\StoredProcedureProperties.cs" />
+    <Compile Include="advanced-filtering\models\TableProperties.cs" />
+    <Compile Include="advanced-filtering\models\ViewProperties.cs" />
     <Compile Include="ArgumentControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

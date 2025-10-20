@@ -14,5 +14,7 @@ namespace SSMSObjectExplorerMenu.advancedfiltering.models
             }
             Type = type;
         }
+
+        protected NameTypeProperties() : base() => Type = string.Empty;
     }
 }

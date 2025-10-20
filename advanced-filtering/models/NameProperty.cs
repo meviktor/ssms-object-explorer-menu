@@ -2,11 +2,11 @@
 
 namespace SSMSObjectExplorerMenu.advancedfiltering.models
 {
-    internal abstract class NameProperty
+    internal abstract class NameProperty : PropertyBase
     {
         internal string Name { get; private set; }
 
-        internal NameProperty(string name)
+        internal NameProperty(string name) : base(true)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -14,5 +14,7 @@ namespace SSMSObjectExplorerMenu.advancedfiltering.models
             }
             Name = name;
         }
+
+        protected NameProperty() : base(false) => Name = string.Empty;
     }
 }

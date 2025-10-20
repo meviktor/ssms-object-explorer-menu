@@ -2,7 +2,7 @@
 
 namespace SSMSObjectExplorerMenu.advancedfiltering.models
 {
-    internal class NameSchemaProperties : NameProperty
+    internal abstract class NameSchemaProperties : NameProperty
     {
         internal string Schema { get; private set; }
 
@@ -14,5 +14,7 @@ namespace SSMSObjectExplorerMenu.advancedfiltering.models
             }
             Schema = schema;
         }
+
+        protected NameSchemaProperties() : base() => Schema = string.Empty;
     }
 }
