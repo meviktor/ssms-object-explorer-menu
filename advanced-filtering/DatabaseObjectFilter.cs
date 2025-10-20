@@ -32,10 +32,55 @@ namespace SSMSObjectExplorerMenu.advancedfiltering
 
         protected DatabaseObjectFilter() { }
 
-        // TODO: add a validate method which:
-        // - gets a string representation if the item's NavigationContext
-        // - builds some model from it
-        // - checks if the model complies with the filter
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(this, obj)) return true;
+
+            if (obj == null || GetType() != obj.GetType()) return false;
+
+            var other = (DatabaseObjectFilter)obj;
+            return Context == other.Context &&
+                Equals(Server, other.Server) &&
+                Equals(Folder, other.Folder) &&
+                Equals(Database, other.Database) &&
+                Equals(Table, other.Table) &&
+                Equals(Column, other.Column) &&
+                Equals(View, other.View) &&
+                Equals(StoredProcedure, other.StoredProcedure) &&
+                Equals(JobServer, other.JobServer) &&
+                Equals(Job, other.Job);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 23 + Context.GetHashCode();
+                hash = hash * 23 + Server.GetHashCode();
+                hash = hash * 23 + Folder.GetHashCode();
+                hash = hash * 23 + Database.GetHashCode();
+                hash = hash * 23 + Table.GetHashCode();
+                hash = hash * 23 + Column.GetHashCode();
+                hash = hash * 23 + View.GetHashCode();
+                hash = hash * 23 + StoredProcedure.GetHashCode();
+                hash = hash * 23 + JobServer.GetHashCode();
+                hash = hash * 23 + Job.GetHashCode();
+                return hash;
+            }
+        }
+
+        public static bool operator ==(DatabaseObjectFilter left, DatabaseObjectFilter right)
+        {
+            if (ReferenceEquals(left, right)) return true;
+            if (left is null || right is null) return false;
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(DatabaseObjectFilter left, DatabaseObjectFilter right)
+        {
+            return !(left == right);
+        }
 
         internal static DatabaseObjectFilter Build(MenuItemContext context, string filter)
         {

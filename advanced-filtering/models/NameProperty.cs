@@ -16,5 +16,25 @@ namespace SSMSObjectExplorerMenu.advancedfiltering.models
         }
 
         protected NameProperty() : base(false) => Name = string.Empty;
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(this, obj)) return true;
+
+            if (obj == null || GetType() != obj.GetType()) return false;
+
+            var other = (NameProperty)obj;
+            return 0 == StringComparer.OrdinalIgnoreCase.Compare(Name, other.Name) && base.Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = base.GetHashCode();
+                hash = hash * 23 + StringComparer.OrdinalIgnoreCase.GetHashCode(Name ?? string.Empty);
+                return hash;
+            }
+        }
     }
 }
