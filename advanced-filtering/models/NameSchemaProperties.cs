@@ -17,6 +17,8 @@ namespace SSMSObjectExplorerMenu.advancedfiltering.models
 
         protected NameSchemaProperties() : base() => Schema = string.Empty;
 
+        protected override bool IgnoreRule() => Schema == "*" && base.IgnoreRule();
+
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(this, obj)) return true;

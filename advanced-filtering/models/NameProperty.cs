@@ -17,6 +17,10 @@ namespace SSMSObjectExplorerMenu.advancedfiltering.models
 
         protected NameProperty() : base(false) => Name = string.Empty;
 
+        internal bool MatchesWithRule(NameProperty rule) => rule.IgnoreRule() || Equals(rule);
+
+        protected virtual bool IgnoreRule() => Name == "*";
+
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(this, obj)) return true;

@@ -32,6 +32,20 @@ namespace SSMSObjectExplorerMenu.advancedfiltering
 
         protected DatabaseObjectFilter() { }
 
+        internal bool MatchesWithRule(DatabaseObjectFilter rule)
+        {
+            return Context == rule.Context &&
+                Server.MatchesWithRule(rule.Server) &&
+                Folder.MatchesWithRule(rule.Folder) &&
+                Database.MatchesWithRule(rule.Database) &&
+                Table.MatchesWithRule(rule.Table) &&
+                Column.MatchesWithRule(rule.Column) &&
+                View.MatchesWithRule(rule.View) &&
+                StoredProcedure.MatchesWithRule(rule.StoredProcedure) &&
+                JobServer.MatchesWithRule(rule.JobServer) &&
+                Job.MatchesWithRule(rule.Job);
+        }
+
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(this, obj)) return true;
