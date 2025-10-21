@@ -298,7 +298,7 @@ namespace SSMSObjectExplorerMenu.advancedfiltering
             { FilterSection.Table, new FilterSection[] { FilterSection.Column } },
             { FilterSection.StoredProcedure, Array.Empty<FilterSection>() },
             { FilterSection.View, Array.Empty<FilterSection>() },
-            { FilterSection.JobServer, new FilterSection[] { FilterSection.Folder } },
+            { FilterSection.JobServer, new FilterSection[] { FilterSection.Folder, FilterSection.Job } },
             { FilterSection.Job, Array.Empty<FilterSection>() }
         };
 
