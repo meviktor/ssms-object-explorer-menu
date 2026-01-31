@@ -71,6 +71,7 @@
     <Compile Include="AddUserDefinedParameter.Designer.cs">
       <DependentUpon>AddUserDefinedParameter.cs</DependentUpon>
     </Compile>
+    <Compile Include="extendedfiltering\ExtendedFiltering.cs" />
     <Compile Include="controls\ArgumentControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -92,6 +93,7 @@
     </Compile>
     <Compile Include="EnumConverter.cs" />
     <Compile Include="enums\UserDefinedArgumentType.cs" />
+    <Compile Include="extendedfiltering\ExtendedFilteringProperties.cs" />
     <Compile Include="extensions\Extensions.cs" />
     <Compile Include="extensions\UIExtensions.cs" />
     <Compile Include="objects\ComboBoxItem.cs" />
