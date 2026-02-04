@@ -59,7 +59,13 @@ namespace SSMSObjectExplorerMenu.objects
 		[Editor(typeof(CollectionEditor), typeof(UITypeEditor))]
         public BindingList<UserDefinedParameter> UserDefinedParameters { get; private set; } = new BindingList<UserDefinedParameter>();
 
-		public MenuItem()
+        [Category("Menu item")]
+        [DisplayName("Additional filter")]
+        [Description("Applicable for the following contexts: Server, Server/Database, Server/Database/Table, Server/Database/Table/Column. It has to be empty for other context types.")]
+        [DefaultValue("")]
+        public string AdditionalFilter { get; set; } = string.Empty;
+
+        public MenuItem()
 		{
 			
 		}
@@ -85,13 +91,17 @@ namespace SSMSObjectExplorerMenu.objects
 
 		public bool TryValidate(out IEnumerable<MenuItemErrorModel> validationErrors)
 		{
-            validationErrors = 
-				UserDefinedParameters.Select(
+            validationErrors = UserDefinedParameters.Select(
                 // reserved names: names coming from context + names of other user-defined parameters of the MenuItem
                 p => p.TryValidate(out IEnumerable<string> paramErrors, Utils.ParametersFromContext.Concat(UserDefinedParameters.Where(pa => pa != p).Select(pa => pa.Name)))
 					? null : new MenuItemErrorModel { MenuItemName = Name, ErrorMessages = paramErrors })
 				.Where(e => e != null);
-			return !validationErrors.Any();
+
+			var additionalFilter = extendedfiltering.ExtendedFilteringProperties.ValidateForContext(Context, AdditionalFilter);
+			if(!additionalFilter.IsValid)
+				validationErrors = validationErrors.Append(new MenuItemErrorModel { MenuItemName = Name, ErrorMessages = new[] { additionalFilter.Error } });
+
+            return !validationErrors.Any();
         }
 	}
 }

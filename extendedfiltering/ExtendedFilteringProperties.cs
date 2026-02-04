@@ -46,26 +46,61 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
         /// <summary>
         /// Returns the context level the filtering properties are targeting. This means the lowest context level where a condition is defined.
         /// </summary>
-        internal ExtendedFilteringContextLevel? ContextLevel
+        internal ContextLevel? Context
         {
             get
             {
-                if (Column != Column.Any) return ExtendedFilteringContextLevel.Column;
-                if (Table != Table.Any) return ExtendedFilteringContextLevel.Table;
-                if (Database != Database.Any) return ExtendedFilteringContextLevel.Database;
-                if (Server != Server.Any) return ExtendedFilteringContextLevel.Server;
+                if (Column != Column.Any) return ContextLevel.Column;
+                if (Table != Table.Any) return ContextLevel.Table;
+                if (Database != Database.Any) return ContextLevel.Database;
+                if (Server != Server.Any) return ContextLevel.Server;
 
                 return null;
             }
         }
 
-        internal bool IsValid => ContextLevel != null;
+        internal bool IsValid => Context != null;
 
         /// <summary>
         /// Returns the filter in string representation, resembling the navigation context format.
         /// </summary>
         /// <returns></returns>
         public override string ToString() => $"{Server}{(Database != null ? $"/{Database}" : null)}{(Table != null ? $"/{Table}" : null)}{(Column != null ? $"/{Column}" : null)}";
+
+        internal static (bool IsValid, string Error) ValidateForContext(string context, string filter)
+        {
+            if(context == null)
+                throw new ArgumentNullException(nameof(context), $"Parameter '{nameof(context)}' cannot be null.");
+
+            var allowedContextTypes = new string[] { Constants.Server_Context, Constants.Database_Context, Constants.Table_Context, Constants.Column_Context };
+
+            if (!allowedContextTypes.Contains(context) && !string.IsNullOrEmpty(filter))
+                return (false, $"Providing additional filter for context {context} is not allowed. Filter must be left empty.");
+
+            ExtendedFilteringProperties props;
+            try
+            {
+                props = BuildFromNavigationContext(filter);
+            }
+            catch (ArgumentException ex)
+            {
+                return (false, $"Invalid additional filter: {ex.Message}");
+            }
+
+            if(props == null)
+                return (false, $"Additional filter does not contain any condition.");
+
+            var filterContext = props.Context.Value;
+            if((filterContext == ContextLevel.Server && context != Constants.Server_Context) ||
+               (filterContext == ContextLevel.Database && context != Constants.Database_Context) ||
+               (filterContext == ContextLevel.Table && context != Constants.Table_Context) ||
+               (filterContext == ContextLevel.Column && context != Constants.Column_Context))
+            {
+                return (false, $"Filter is targeting {filterContext} level, while it should target {context} level.");
+            }
+
+            return (true, null);
+        }
 
         /// <summary>
         /// Checks if the filtering properties of an SSMS Object Explorer node comply to the filtering properties of a <see cref="MenuItem"/>.
@@ -85,31 +120,31 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             if (!expectation.IsValid)
                 throw new ArgumentException(nameof(expectation), $"Parameter '{nameof(expectation)}' does not filter for anything.");
 
-            if (subject.ContextLevel != expectation.ContextLevel)
+            if (subject.Context != expectation.Context)
                 return false;
 
-            var contextLevel = subject.ContextLevel;
+            var contextLevel = subject.Context;
 
             // Column does not match while targeting column level.
-            if (contextLevel == ExtendedFilteringContextLevel.Column && subject.Column.Name != expectation.Column.Name)
+            if (contextLevel == ContextLevel.Column && subject.Column.Name != expectation.Column.Name)
                 return false;
             // Table does not match. It's only relevant, if the MenuItem's filter:
             // - Targets the table level, or
             // - Targets a column, but also filters for table name/schema
             if ((subject.Table?.Name != expectation.Table?.Name || subject.Table?.Schema != expectation.Table?.Schema) &&
-               (contextLevel == ExtendedFilteringContextLevel.Table || (contextLevel < ExtendedFilteringContextLevel.Table && expectation.Table != Table.Any)))
+               (contextLevel == ContextLevel.Table || (contextLevel < ContextLevel.Table && expectation.Table != Table.Any)))
                 return false;
             // Database does not match. It's only relevant, if the MenuItem's filter:
             // - Targets the database level, or
             // - Targets a column or a table, but also filters for database name
             if ((subject.Database?.Name != expectation.Database?.Name) &&
-                (contextLevel == ExtendedFilteringContextLevel.Database || (contextLevel < ExtendedFilteringContextLevel.Database && expectation.Database != Database.Any)))
+                (contextLevel == ContextLevel.Database || (contextLevel < ContextLevel.Database && expectation.Database != Database.Any)))
                 return false;
             // Server does not match. It's only relevant, if the MenuItem's filter:
             // - Targets the server level, or
             // - Targets a column, a table, or a database, but also filters for server name
             if ((subject.Server?.Name != expectation.Server?.Name) &&
-                (contextLevel == ExtendedFilteringContextLevel.Server || (contextLevel < ExtendedFilteringContextLevel.Server && expectation.Server != Server.Any)))
+                (contextLevel == ContextLevel.Server || (contextLevel < ContextLevel.Server && expectation.Server != Server.Any)))
                 return false;
 
             // All checks passed. Object Explorer node complies to MenuItem filtering properties.
@@ -121,14 +156,14 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
         /// </summary>
         /// <param name="navigationContext">The navigaton context belongs to the SSMS Object Explorer tree node.</param>
         /// <returns></returns>
-        internal static ExtendedFilteringProperties BuildFomNavigationContext(string navigationContext)
+        internal static ExtendedFilteringProperties BuildFromNavigationContext(string navigationContext)
         {
             var navContextSections = navigationContext.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
             var parsedSections = navContextSections.Select(s => IdentifySection(s)).ToArray();
             if (parsedSections.Any(s => !s.IsIdentified))
             {
-                throw new ArgumentException($"The navigation context '{navigationContext}' contains unrecognized sections. Accepted section types: {nameof(Server)}, {nameof(Database)}, {nameof(Table)}, {nameof(Column)}.");
+                throw new ArgumentException($"The navigation context '{navigationContext}' contains not allowed sections. Accepted section types: {nameof(Server)}, {nameof(Database)}, {nameof(Table)}, {nameof(Column)}.");
             }
 
             var duplicatedSectionKinds = parsedSections.GroupBy(s => s.Kind).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
@@ -190,7 +225,7 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
         }
     }
 
-    internal enum ExtendedFilteringContextLevel : byte
+    internal enum ContextLevel : byte
     {
         [Description(Constants.Column_Context)]
         Column = 0,
@@ -270,7 +305,7 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
     internal sealed class Server : NameProperty
     {
         internal static readonly Server Any = new Server("*");
-        internal static readonly Regex @Regex = new Regex(@"Server\[\@Name\='([a-zA-Z_\@#][a-zA-Z0-9_\@#\$]*)'\]");
+        internal static readonly Regex @Regex = new Regex(@"Server\[\@Name\='([a-zA-Z_\@#][a-zA-Z0-9_\@#\$]*)'\]", RegexOptions.IgnoreCase); // Making allowances for mistakes in filter texts regarding wrong casing.
 
         internal Server(string name) : base(name) { }
 
@@ -280,7 +315,7 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
     internal sealed class Database : NameProperty
     {
         internal static readonly Database Any = new Database("*");
-        internal static readonly Regex @Regex = new Regex(@"Database\[\@Name\='([a-zA-Z_\@#][a-zA-Z0-9_\@#\$]*)'\]");
+        internal static readonly Regex @Regex = new Regex(@"Database\[\@Name\='([a-zA-Z_\@#][a-zA-Z0-9_\@#\$]*)'\]", RegexOptions.IgnoreCase);
 
         internal Database(string name) : base(name) { }
 
@@ -290,7 +325,7 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
     internal sealed class Table : NameSchemaProperties
     {
         internal static readonly Table Any = new Table("*", "*");
-        internal static readonly Regex @Regex = new Regex(@"Table\[\@Name\='([a-zA-Z_\@#][a-zA-Z0-9_\@#\$]*)' and \@Schema\='([a-zA-Z_\@#][a-zA-Z0-9_\@#\$]*)'\]");
+        internal static readonly Regex @Regex = new Regex(@"Table\[\@Name\='([a-zA-Z_\@#][a-zA-Z0-9_\@#\$]*)' and \@Schema\='([a-zA-Z_\@#][a-zA-Z0-9_\@#\$]*)'\]", RegexOptions.IgnoreCase);
 
         internal Table(string name, string schema) : base(name, schema) { }
 
@@ -300,7 +335,7 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
     internal sealed class Column : NameProperty
     {
         internal static readonly Column Any = new Column("*");
-        internal static readonly Regex @Regex = new Regex(@"Column\[\@Name\='([a-zA-Z_\@#][a-zA-Z0-9_\@#\$]*)'\]");
+        internal static readonly Regex @Regex = new Regex(@"Column\[\@Name\='([a-zA-Z_\@#][a-zA-Z0-9_\@#\$]*)'\]", RegexOptions.IgnoreCase);
 
         internal Column(string name) : base(name) { }
 
