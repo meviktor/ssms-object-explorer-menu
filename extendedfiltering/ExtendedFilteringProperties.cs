@@ -193,15 +193,17 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             filter.Server = serverSection != default ? new Server(serverSection.Properties.Single().Value)
                     : (filter.Database != null ? Server.Any : null);
 
-            var lengthErrorTemplate = $"The provided {{0}} name '{{1}}' exceeds maximum length of {SQL_SERVER_IDENTIFIER_MAX_LENGTH} characters.";
+            var lengthErrorTemplate = $"The provided {{0}} '{{1}}' exceeds maximum length of {SQL_SERVER_IDENTIFIER_MAX_LENGTH} characters.";
             if (filter.Column?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
-                throw new ArgumentException(string.Format(lengthErrorTemplate, nameof(PropertyTypes.Column.Name), filter.Column.Name));
+                throw new ArgumentException(string.Format(lengthErrorTemplate, "column identifier", filter.Column.Name));
             if(filter.Table?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
-                throw new ArgumentException(string.Format(lengthErrorTemplate, nameof(PropertyTypes.Table.Name), filter.Table.Name));
-            if(filter.Database?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
-                throw new ArgumentException(string.Format(lengthErrorTemplate, nameof(PropertyTypes.Database.Name), filter.Database.Name));
+                throw new ArgumentException(string.Format(lengthErrorTemplate, "table identifier", filter.Table.Name));
+            if (filter.Table?.Schema.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
+                throw new ArgumentException(string.Format(lengthErrorTemplate, "schema identifier", filter.Table.Schema));
+            if (filter.Database?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
+                throw new ArgumentException(string.Format(lengthErrorTemplate, "database identifier", filter.Database.Name));
             if(filter.Server?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
-                throw new ArgumentException(string.Format(lengthErrorTemplate, nameof(PropertyTypes.Server.Name), filter.Server.Name));
+                throw new ArgumentException(string.Format(lengthErrorTemplate, "server identifier", filter.Server.Name));
 
             return filter.IsValid ? filter : null;
         }
