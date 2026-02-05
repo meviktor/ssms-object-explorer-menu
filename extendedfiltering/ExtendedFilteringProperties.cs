@@ -1,8 +1,8 @@
 ﻿using SSMSObjectExplorerMenu.objects;
+using SSMSObjectExplorerMenu.extendedfiltering.PropertyTypes;
 using System;
 using System.ComponentModel;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace SSMSObjectExplorerMenu.extendedfiltering
 {
@@ -22,6 +22,8 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
     /// </summary>
     internal class ExtendedFilteringProperties
     {
+        private static byte SQL_SERVER_IDENTIFIER_MAX_LENGTH = 128;
+
         internal Server Server { get; private set; }
 
         internal Database Database { get; private set; }
@@ -44,16 +46,16 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
         }
 
         /// <summary>
-        /// Returns the context level the filtering properties are targeting. This means the lowest context level where a condition is defined.
+        /// Returns the context level the filtering properties are targeting. This means the lowest applicable (not null) context level where a condition is defined.
         /// </summary>
         internal ContextLevel? Context
         {
             get
             {
-                if (Column != Column.Any) return ContextLevel.Column;
-                if (Table != Table.Any) return ContextLevel.Table;
-                if (Database != Database.Any) return ContextLevel.Database;
-                if (Server != Server.Any) return ContextLevel.Server;
+                if (Column != null && Column != Column.Any) return ContextLevel.Column;
+                if (Table != null && Table != Table.Any) return ContextLevel.Table;
+                if (Database != null && Database != Database.Any) return ContextLevel.Database;
+                if (Server != null && Server != Server.Any) return ContextLevel.Server;
 
                 return null;
             }
@@ -163,31 +165,43 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             var parsedSections = navContextSections.Select(s => IdentifySection(s)).ToArray();
             if (parsedSections.Any(s => !s.IsIdentified))
             {
-                throw new ArgumentException($"The navigation context '{navigationContext}' contains not allowed sections. Accepted section types: {nameof(Server)}, {nameof(Database)}, {nameof(Table)}, {nameof(Column)}.");
+                throw new ArgumentException(
+                    $"'{navigationContext}' contains either not allowed section types or sections with bad syntax. " + 
+                    $"Accepted section types: {nameof(Server)}, {nameof(Database)}, {nameof(Table)}, {nameof(Column)}.");
             }
 
             var duplicatedSectionKinds = parsedSections.GroupBy(s => s.Kind).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
             if(duplicatedSectionKinds.Any())
             {
-                throw new ArgumentException($"The navigation context '{navigationContext}' contains duplicated sections: {string.Join(", ", duplicatedSectionKinds)}.");
+                throw new ArgumentException(
+                    $"'{navigationContext}' contains duplicated sections: {string.Join(", ", duplicatedSectionKinds)}.");
             }
-
-            var filter = new ExtendedFilteringProperties();
 
             var columnSection = parsedSections.SingleOrDefault(s => s.Kind == nameof(Column));
             var tableSection = parsedSections.SingleOrDefault(s => s.Kind == nameof(Table));
             var databaseSection = parsedSections.SingleOrDefault(s => s.Kind == nameof(Database));
             var serverSection = parsedSections.SingleOrDefault(s => s.Kind == nameof(Server));
 
+            var filter = new ExtendedFilteringProperties();
             filter.Column = columnSection != default ? new Column(columnSection.Properties.Single().Value) : null;
             filter.Table = tableSection != default ? new Table(
-                tableSection.Properties.Single(p => p.Name == nameof(extendedfiltering.Table.Name)).Value,
-                tableSection.Properties.Single(p => p.Name == nameof(extendedfiltering.Table.Schema)).Value)
+                tableSection.Properties.Single(p => p.Name == nameof(PropertyTypes.Table.Name)).Value,
+                tableSection.Properties.Single(p => p.Name == nameof(PropertyTypes.Table.Schema)).Value)
                     : (filter.Column != null ? Table.Any : null);
             filter.Database = databaseSection != default ? new Database(databaseSection.Properties.Single().Value) 
                     : (filter.Table != null ? Database.Any : null);
             filter.Server = serverSection != default ? new Server(serverSection.Properties.Single().Value)
                     : (filter.Database != null ? Server.Any : null);
+
+            var lengthErrorTemplate = $"The provided {{0}} name '{{1}}' exceeds maximum length of {SQL_SERVER_IDENTIFIER_MAX_LENGTH} characters.";
+            if (filter.Column?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
+                throw new ArgumentException(string.Format(lengthErrorTemplate, nameof(PropertyTypes.Column.Name), filter.Column.Name));
+            if(filter.Table?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
+                throw new ArgumentException(string.Format(lengthErrorTemplate, nameof(PropertyTypes.Table.Name), filter.Table.Name));
+            if(filter.Database?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
+                throw new ArgumentException(string.Format(lengthErrorTemplate, nameof(PropertyTypes.Database.Name), filter.Database.Name));
+            if(filter.Server?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
+                throw new ArgumentException(string.Format(lengthErrorTemplate, nameof(PropertyTypes.Server.Name), filter.Server.Name));
 
             return filter.IsValid ? filter : null;
         }
@@ -197,28 +211,28 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             var serverMatch = Server.Regex.Match(section);
             if (serverMatch.Success)
             {
-                return (true, nameof(Server), new (string, string)[] { (nameof(extendedfiltering.Server.Name), serverMatch.Groups[1].Value) });
+                return (true, nameof(Server), new (string, string)[] { (nameof(PropertyTypes.Server.Name), serverMatch.Groups[1].Value) });
             }
 
             var databaseMatch = Database.Regex.Match(section);
             if (databaseMatch.Success)
             {
-                return (true, nameof(Database), new (string, string)[] { (nameof(extendedfiltering.Database.Name), databaseMatch.Groups[1].Value) });
+                return (true, nameof(Database), new (string, string)[] { (nameof(PropertyTypes.Database.Name), databaseMatch.Groups[1].Value) });
             }
 
             var tableMatch = Table.Regex.Match(section);
             if (tableMatch.Success)
             {
                 return (true, nameof(Table), new (string, string)[] { 
-                    (nameof(extendedfiltering.Table.Name), tableMatch.Groups[1].Value),
-                    (nameof(extendedfiltering.Table.Schema), tableMatch.Groups[2].Value)
+                    (nameof(PropertyTypes.Table.Name), tableMatch.Groups[1].Value),
+                    (nameof(PropertyTypes.Table.Schema), tableMatch.Groups[2].Value)
                 });
             }
 
             var columnMatch = Column.Regex.Match(section);
             if (columnMatch.Success)
             {
-                return (true, nameof(Column), new (string, string)[] { (nameof(extendedfiltering.Column.Name), columnMatch.Groups[1].Value) });
+                return (true, nameof(Column), new (string, string)[] { (nameof(PropertyTypes.Column.Name), columnMatch.Groups[1].Value) });
             }
 
             return (false, null, null);
@@ -235,110 +249,5 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
         Database = 2,
         [Description(Constants.Server_Context)]
         Server = 3
-    }
-
-    internal abstract class NameProperty : IEquatable<NameProperty>
-    {
-        internal string Name { get; private set; }
-
-        internal NameProperty(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentNullException(nameof(name), $"Parameter '{nameof(name)}' cannot be null or whitespace.");
-            }
-            Name = name;
-        }
-
-        public bool Equals(NameProperty other)
-        {
-            if(ReferenceEquals(this, other))
-                return true;
-            if (other is null)
-                return false;
-            if (other.GetType() != this.GetType())
-                return false;
-            return string.Equals(this.Name, other.Name, StringComparison.OrdinalIgnoreCase);
-        }
-
-        public override bool Equals(object obj) => Equals(obj as NameProperty);
-
-        public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(Name);
-
-        public static bool operator ==(NameProperty left, NameProperty right)
-            => ReferenceEquals(left, right) || (left?.Equals(right) ?? false);
-
-        public static bool operator !=(NameProperty left, NameProperty right)
-            => !(left == right);
-    }
-
-    internal abstract class NameSchemaProperties : NameProperty, IEquatable<NameSchemaProperties>
-    {
-        internal string Schema { get; private set; }
-
-        internal NameSchemaProperties(string name, string schema) : base(name)
-        {
-            if (string.IsNullOrWhiteSpace(schema))
-            {
-                throw new ArgumentNullException(nameof(schema), $"Parameter '{nameof(schema)}' cannot be null.");
-            }
-            Schema = schema;
-        }
-
-        public bool Equals(NameSchemaProperties other) => base.Equals(other)
-            && string.Equals(this.Schema, other.Schema, StringComparison.OrdinalIgnoreCase);
-
-        public override bool Equals(object other) => Equals(other as NameSchemaProperties);
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                int hash = 17;
-                hash = hash * 31 + base.GetHashCode();
-                hash = hash * 31 + StringComparer.OrdinalIgnoreCase.GetHashCode(Schema);
-                return hash;
-            }
-        }
-    }
-
-    internal sealed class Server : NameProperty
-    {
-        internal static readonly Server Any = new Server("*");
-        internal static readonly Regex @Regex = new Regex(@"Server\[\@Name\='([a-zA-Z_\@#][a-zA-Z0-9_\@#\$]*)'\]", RegexOptions.IgnoreCase); // Making allowances for mistakes in filter texts regarding wrong casing.
-
-        internal Server(string name) : base(name) { }
-
-        public override string ToString() => $"Server[@Name='{Name}']";
-    }
-
-    internal sealed class Database : NameProperty
-    {
-        internal static readonly Database Any = new Database("*");
-        internal static readonly Regex @Regex = new Regex(@"Database\[\@Name\='([a-zA-Z_\@#][a-zA-Z0-9_\@#\$]*)'\]", RegexOptions.IgnoreCase);
-
-        internal Database(string name) : base(name) { }
-
-        public override string ToString() => $"Database[@Name='{Name}']";
-    }
-
-    internal sealed class Table : NameSchemaProperties
-    {
-        internal static readonly Table Any = new Table("*", "*");
-        internal static readonly Regex @Regex = new Regex(@"Table\[\@Name\='([a-zA-Z_\@#][a-zA-Z0-9_\@#\$]*)' and \@Schema\='([a-zA-Z_\@#][a-zA-Z0-9_\@#\$]*)'\]", RegexOptions.IgnoreCase);
-
-        internal Table(string name, string schema) : base(name, schema) { }
-
-        public override string ToString() => $"Table[@Name='{Name}' and @Schema='{Schema}']";
-    }
-
-    internal sealed class Column : NameProperty
-    {
-        internal static readonly Column Any = new Column("*");
-        internal static readonly Regex @Regex = new Regex(@"Column\[\@Name\='([a-zA-Z_\@#][a-zA-Z0-9_\@#\$]*)'\]", RegexOptions.IgnoreCase);
-
-        internal Column(string name) : base(name) { }
-
-        public override string ToString() => $"Column[@Name='{Name}']";
     }
 }
