@@ -94,6 +94,12 @@
     <Compile Include="EnumConverter.cs" />
     <Compile Include="enums\UserDefinedArgumentType.cs" />
     <Compile Include="extendedfiltering\ExtendedFilteringProperties.cs" />
+    <Compile Include="extendedfiltering\PropertyTypes\Column.cs" />
+    <Compile Include="extendedfiltering\PropertyTypes\Database.cs" />
+    <Compile Include="extendedfiltering\PropertyTypes\NameProperty.cs" />
+    <Compile Include="extendedfiltering\PropertyTypes\NameSchemaProperties.cs" />
+    <Compile Include="extendedfiltering\PropertyTypes\Server.cs" />
+    <Compile Include="extendedfiltering\PropertyTypes\Table.cs" />
     <Compile Include="extensions\Extensions.cs" />
     <Compile Include="extensions\UIExtensions.cs" />
     <Compile Include="objects\ComboBoxItem.cs" />
