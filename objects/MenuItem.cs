@@ -70,7 +70,7 @@ namespace SSMSObjectExplorerMenu.objects
 			
 		}
 
-		public MenuItem(bool enabled, string context, string name, string script, bool execute, bool confirm, IEnumerable<UserDefinedParameter> userDefinedParams = null)
+		public MenuItem(bool enabled, string context, string name, string script, bool execute, bool confirm, string additionalFilter = "", IEnumerable<UserDefinedParameter> userDefinedParams = null)
 		{
             Enabled = enabled;
 			Context = context;
@@ -78,6 +78,7 @@ namespace SSMSObjectExplorerMenu.objects
 			Script = script;
 			Execute = execute;
 			Confirm = confirm;
+            AdditionalFilter = additionalFilter;
 
             foreach (var param in userDefinedParams ?? Enumerable.Empty<UserDefinedParameter>())
             {

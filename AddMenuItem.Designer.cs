@@ -50,15 +50,18 @@
             this.buttonRemoveUserDefinedParam = new System.Windows.Forms.Button();
             this.labelUserDefinedParameters = new System.Windows.Forms.Label();
             this.buttonEditUserDefinedParameter = new System.Windows.Forms.Button();
+            this.filtersLabel = new System.Windows.Forms.Label();
+            this.advancedFilterControl = new SSMSObjectExplorer.controls.AdvancedFilterControl();
             this.SuspendLayout();
             // 
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(444, 502);
+            this.buttonCancel.Location = new System.Drawing.Point(581, 718);
+            this.buttonCancel.Margin = new System.Windows.Forms.Padding(4);
             this.buttonCancel.Name = "buttonCancel";
-            this.buttonCancel.Size = new System.Drawing.Size(75, 23);
+            this.buttonCancel.Size = new System.Drawing.Size(100, 28);
             this.buttonCancel.TabIndex = 6;
             this.buttonCancel.Text = "Cancel";
             this.buttonCancel.UseVisualStyleBackColor = true;
@@ -66,22 +69,23 @@
             // buttonOK
             // 
             this.buttonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOK.Enabled = false;
-            this.buttonOK.Location = new System.Drawing.Point(363, 502);
+            this.buttonOK.Location = new System.Drawing.Point(473, 718);
+            this.buttonOK.Margin = new System.Windows.Forms.Padding(4);
             this.buttonOK.Name = "buttonOK";
-            this.buttonOK.Size = new System.Drawing.Size(75, 23);
+            this.buttonOK.Size = new System.Drawing.Size(100, 28);
             this.buttonOK.TabIndex = 5;
             this.buttonOK.Text = "OK";
             this.buttonOK.UseVisualStyleBackColor = true;
+            this.buttonOK.Click += new System.EventHandler(this.buttonOK_Click);
             // 
             // textName
             // 
             this.textName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textName.Location = new System.Drawing.Point(88, 12);
+            this.textName.Location = new System.Drawing.Point(117, 15);
+            this.textName.Margin = new System.Windows.Forms.Padding(4);
             this.textName.Name = "textName";
-            this.textName.Size = new System.Drawing.Size(431, 20);
+            this.textName.Size = new System.Drawing.Size(562, 22);
             this.textName.TabIndex = 0;
             this.textName.TextChanged += new System.EventHandler(this.textName_TextChanged);
             // 
@@ -104,17 +108,19 @@
             "Server/JobServer",
             "Server/JobServer/JobsFolder",
             "Server/JobServer/Job"});
-            this.comboContext.Location = new System.Drawing.Point(88, 38);
+            this.comboContext.Location = new System.Drawing.Point(117, 47);
+            this.comboContext.Margin = new System.Windows.Forms.Padding(4);
             this.comboContext.Name = "comboContext";
-            this.comboContext.Size = new System.Drawing.Size(431, 21);
+            this.comboContext.Size = new System.Drawing.Size(562, 24);
             this.comboContext.TabIndex = 1;
             // 
             // checkExecute
             // 
             this.checkExecute.AutoSize = true;
-            this.checkExecute.Location = new System.Drawing.Point(88, 65);
+            this.checkExecute.Location = new System.Drawing.Point(117, 183);
+            this.checkExecute.Margin = new System.Windows.Forms.Padding(4);
             this.checkExecute.Name = "checkExecute";
-            this.checkExecute.Size = new System.Drawing.Size(65, 17);
+            this.checkExecute.Size = new System.Drawing.Size(77, 20);
             this.checkExecute.TabIndex = 2;
             this.checkExecute.Text = "Execute";
             this.checkExecute.UseVisualStyleBackColor = true;
@@ -123,9 +129,10 @@
             // checkConfirm
             // 
             this.checkConfirm.AutoSize = true;
-            this.checkConfirm.Location = new System.Drawing.Point(88, 88);
+            this.checkConfirm.Location = new System.Drawing.Point(117, 213);
+            this.checkConfirm.Margin = new System.Windows.Forms.Padding(4);
             this.checkConfirm.Name = "checkConfirm";
-            this.checkConfirm.Size = new System.Drawing.Size(135, 17);
+            this.checkConfirm.Size = new System.Drawing.Size(166, 20);
             this.checkConfirm.TabIndex = 3;
             this.checkConfirm.Text = "Confirm before execute";
             this.checkConfirm.UseVisualStyleBackColor = true;
@@ -138,11 +145,12 @@
             this.textPath.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textPath.Location = new System.Drawing.Point(89, 284);
+            this.textPath.Location = new System.Drawing.Point(119, 452);
+            this.textPath.Margin = new System.Windows.Forms.Padding(4);
             this.textPath.Multiline = true;
             this.textPath.Name = "textPath";
             this.textPath.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textPath.Size = new System.Drawing.Size(431, 210);
+            this.textPath.Size = new System.Drawing.Size(562, 258);
             this.textPath.TabIndex = 4;
             this.textPath.Text = resources.GetString("textPath.Text");
             this.textPath.WordWrap = false;
@@ -151,27 +159,30 @@
             // labelName
             // 
             this.labelName.AutoSize = true;
-            this.labelName.Location = new System.Drawing.Point(12, 15);
+            this.labelName.Location = new System.Drawing.Point(16, 18);
+            this.labelName.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labelName.Name = "labelName";
-            this.labelName.Size = new System.Drawing.Size(35, 13);
+            this.labelName.Size = new System.Drawing.Size(44, 16);
             this.labelName.TabIndex = 7;
             this.labelName.Text = "Name";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 41);
+            this.label1.Location = new System.Drawing.Point(16, 50);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(43, 13);
+            this.label1.Size = new System.Drawing.Size(51, 16);
             this.label1.TabIndex = 8;
             this.label1.Text = "Context";
             // 
             // radioPath
             // 
             this.radioPath.AutoSize = true;
-            this.radioPath.Location = new System.Drawing.Point(146, 261);
+            this.radioPath.Location = new System.Drawing.Point(195, 424);
+            this.radioPath.Margin = new System.Windows.Forms.Padding(4);
             this.radioPath.Name = "radioPath";
-            this.radioPath.Size = new System.Drawing.Size(47, 17);
+            this.radioPath.Size = new System.Drawing.Size(55, 20);
             this.radioPath.TabIndex = 10;
             this.radioPath.Text = "Path";
             this.radioPath.UseVisualStyleBackColor = true;
@@ -181,9 +192,10 @@
             // 
             this.radioScript.AutoSize = true;
             this.radioScript.Checked = true;
-            this.radioScript.Location = new System.Drawing.Point(88, 261);
+            this.radioScript.Location = new System.Drawing.Point(117, 424);
+            this.radioScript.Margin = new System.Windows.Forms.Padding(4);
             this.radioScript.Name = "radioScript";
-            this.radioScript.Size = new System.Drawing.Size(52, 17);
+            this.radioScript.Size = new System.Drawing.Size(62, 20);
             this.radioScript.TabIndex = 11;
             this.radioScript.TabStop = true;
             this.radioScript.Text = "Script";
@@ -193,9 +205,10 @@
             // buttonOpen
             // 
             this.buttonOpen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonOpen.Location = new System.Drawing.Point(495, 255);
+            this.buttonOpen.Location = new System.Drawing.Point(649, 417);
+            this.buttonOpen.Margin = new System.Windows.Forms.Padding(4);
             this.buttonOpen.Name = "buttonOpen";
-            this.buttonOpen.Size = new System.Drawing.Size(25, 23);
+            this.buttonOpen.Size = new System.Drawing.Size(33, 28);
             this.buttonOpen.TabIndex = 12;
             this.buttonOpen.Text = "...";
             this.buttonOpen.UseVisualStyleBackColor = true;
@@ -211,10 +224,9 @@
             // 
             this.labelVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.labelVersion.AutoSize = true;
-            this.labelVersion.Location = new System.Drawing.Point(12, 510);
-            this.labelVersion.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.labelVersion.Location = new System.Drawing.Point(16, 728);
             this.labelVersion.Name = "labelVersion";
-            this.labelVersion.Size = new System.Drawing.Size(31, 13);
+            this.labelVersion.Size = new System.Drawing.Size(34, 16);
             this.labelVersion.TabIndex = 13;
             this.labelVersion.Text = "0.0.0";
             // 
@@ -226,9 +238,10 @@
             this.ParameterName,
             this.ParameterType});
             this.listViewUserDefinedParam.HideSelection = false;
-            this.listViewUserDefinedParam.Location = new System.Drawing.Point(88, 135);
+            this.listViewUserDefinedParam.Location = new System.Drawing.Point(117, 265);
+            this.listViewUserDefinedParam.Margin = new System.Windows.Forms.Padding(4);
             this.listViewUserDefinedParam.Name = "listViewUserDefinedParam";
-            this.listViewUserDefinedParam.Size = new System.Drawing.Size(350, 120);
+            this.listViewUserDefinedParam.Size = new System.Drawing.Size(454, 147);
             this.listViewUserDefinedParam.TabIndex = 15;
             this.listViewUserDefinedParam.UseCompatibleStateImageBehavior = false;
             this.listViewUserDefinedParam.View = System.Windows.Forms.View.Details;
@@ -247,9 +260,10 @@
             // buttonAddUserDefinedParam
             // 
             this.buttonAddUserDefinedParam.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonAddUserDefinedParam.Location = new System.Drawing.Point(444, 135);
+            this.buttonAddUserDefinedParam.Location = new System.Drawing.Point(581, 265);
+            this.buttonAddUserDefinedParam.Margin = new System.Windows.Forms.Padding(4);
             this.buttonAddUserDefinedParam.Name = "buttonAddUserDefinedParam";
-            this.buttonAddUserDefinedParam.Size = new System.Drawing.Size(75, 23);
+            this.buttonAddUserDefinedParam.Size = new System.Drawing.Size(100, 28);
             this.buttonAddUserDefinedParam.TabIndex = 16;
             this.buttonAddUserDefinedParam.Text = "Add";
             this.buttonAddUserDefinedParam.UseVisualStyleBackColor = true;
@@ -259,9 +273,10 @@
             // 
             this.buttonRemoveUserDefinedParam.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonRemoveUserDefinedParam.Enabled = false;
-            this.buttonRemoveUserDefinedParam.Location = new System.Drawing.Point(445, 193);
+            this.buttonRemoveUserDefinedParam.Location = new System.Drawing.Point(582, 337);
+            this.buttonRemoveUserDefinedParam.Margin = new System.Windows.Forms.Padding(4);
             this.buttonRemoveUserDefinedParam.Name = "buttonRemoveUserDefinedParam";
-            this.buttonRemoveUserDefinedParam.Size = new System.Drawing.Size(75, 23);
+            this.buttonRemoveUserDefinedParam.Size = new System.Drawing.Size(100, 28);
             this.buttonRemoveUserDefinedParam.TabIndex = 18;
             this.buttonRemoveUserDefinedParam.Text = "Remove";
             this.buttonRemoveUserDefinedParam.UseVisualStyleBackColor = true;
@@ -270,9 +285,10 @@
             // labelUserDefinedParameters
             // 
             this.labelUserDefinedParameters.AutoSize = true;
-            this.labelUserDefinedParameters.Location = new System.Drawing.Point(91, 117);
+            this.labelUserDefinedParameters.Location = new System.Drawing.Point(119, 245);
+            this.labelUserDefinedParameters.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labelUserDefinedParameters.Name = "labelUserDefinedParameters";
-            this.labelUserDefinedParameters.Size = new System.Drawing.Size(154, 13);
+            this.labelUserDefinedParameters.Size = new System.Drawing.Size(194, 16);
             this.labelUserDefinedParameters.TabIndex = 19;
             this.labelUserDefinedParameters.Text = "List of user-defined parameters:";
             // 
@@ -280,19 +296,40 @@
             // 
             this.buttonEditUserDefinedParameter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonEditUserDefinedParameter.Enabled = false;
-            this.buttonEditUserDefinedParameter.Location = new System.Drawing.Point(444, 164);
+            this.buttonEditUserDefinedParameter.Location = new System.Drawing.Point(581, 301);
+            this.buttonEditUserDefinedParameter.Margin = new System.Windows.Forms.Padding(4);
             this.buttonEditUserDefinedParameter.Name = "buttonEditUserDefinedParameter";
-            this.buttonEditUserDefinedParameter.Size = new System.Drawing.Size(75, 23);
+            this.buttonEditUserDefinedParameter.Size = new System.Drawing.Size(100, 28);
             this.buttonEditUserDefinedParameter.TabIndex = 20;
             this.buttonEditUserDefinedParameter.Text = "Edit";
             this.buttonEditUserDefinedParameter.UseVisualStyleBackColor = true;
             this.buttonEditUserDefinedParameter.Click += new System.EventHandler(this.buttonEditUserDefinedParam_Click);
             // 
+            // filtersLabel
+            // 
+            this.filtersLabel.AutoSize = true;
+            this.filtersLabel.Location = new System.Drawing.Point(17, 83);
+            this.filtersLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.filtersLabel.Name = "filtersLabel";
+            this.filtersLabel.Size = new System.Drawing.Size(43, 16);
+            this.filtersLabel.TabIndex = 22;
+            this.filtersLabel.Text = "Filters";
+            // 
+            // advancedFilterControl
+            // 
+            this.advancedFilterControl.ContextComboBox = this.comboContext;
+            this.advancedFilterControl.Location = new System.Drawing.Point(108, 83);
+            this.advancedFilterControl.Name = "advancedFilterControl";
+            this.advancedFilterControl.Size = new System.Drawing.Size(577, 86);
+            this.advancedFilterControl.TabIndex = 23;
+            // 
             // AddMenuItem
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(531, 540);
+            this.ClientSize = new System.Drawing.Size(697, 765);
+            this.Controls.Add(this.advancedFilterControl);
+            this.Controls.Add(this.filtersLabel);
             this.Controls.Add(this.buttonEditUserDefinedParameter);
             this.Controls.Add(this.labelUserDefinedParameters);
             this.Controls.Add(this.buttonRemoveUserDefinedParam);
@@ -312,6 +349,7 @@
             this.Controls.Add(this.buttonOK);
             this.Controls.Add(this.buttonCancel);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "AddMenuItem";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
@@ -344,5 +382,7 @@
         private System.Windows.Forms.Button buttonRemoveUserDefinedParam;
         private System.Windows.Forms.Label labelUserDefinedParameters;
         private System.Windows.Forms.Button buttonEditUserDefinedParameter;
+        private System.Windows.Forms.Label filtersLabel;
+        private SSMSObjectExplorer.controls.AdvancedFilterControl advancedFilterControl;
     }
 }

@@ -20,6 +20,12 @@ namespace SSMSObjectExplorerMenu.extendedfiltering.PropertyTypes
 
         public override bool Equals(object other) => Equals(other as NameSchemaProperties);
 
+        public static bool operator ==(NameSchemaProperties left, NameSchemaProperties right)
+            => ReferenceEquals(left, right) || (left?.Equals(right) ?? false);
+
+        public static bool operator !=(NameSchemaProperties left, NameSchemaProperties right)
+            => !(left == right);
+
         public override int GetHashCode()
         {
             unchecked

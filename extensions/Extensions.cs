@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 
@@ -149,7 +150,18 @@ namespace SSMSObjectExplorerMenu.extensions
             throw new ArgumentException($"Unknown {nameof(T)} value.", nameof(context));
         }
 
-		public static bool ValidForUserDefinedParameterType(this string value, UserDefinedParameterType type)
+        public static T FromStringDescription<T>(this string description) where T : Enum
+        {
+            if(description is null)
+				throw new ArgumentNullException(nameof(description));
+
+			return typeof(T).GetFields()
+				.Where(e => Attribute.GetCustomAttribute(e, typeof(DescriptionAttribute)) is DescriptionAttribute attr && attr.Description == description)
+				.Select(e => (T)Enum.Parse(typeof(T), e.Name))
+				.Single();
+        }
+
+        public static bool ValidForUserDefinedParameterType(this string value, UserDefinedParameterType type)
 		{
             switch (type)
             {

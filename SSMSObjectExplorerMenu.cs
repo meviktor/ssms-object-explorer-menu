@@ -6,6 +6,7 @@ using Microsoft.SqlServer.Management.UI.VSIntegration.ObjectExplorer;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
+using SSMSObjectExplorerMenu.extendedfiltering;
 using SSMSObjectExplorerMenu.extensions;
 using SSMSObjectExplorerMenu.objects;
 using System;
@@ -118,7 +119,7 @@ namespace SSMSObjectExplorerMenu
 						continue;
 					}
 
-                    if (menuItem.Context == "All" || menuItem.Context == nodes[0].UrnPath)
+					if (menuItem.Context == "All" || (menuItem.Context == nodes[0].UrnPath && ExtendedFilteringGuard.IsAllowed(nodeInfo, menuItem.AdditionalFilter)))
 					{
 						MenuItemInstance instance = new MenuItemInstance(menuItem, nodeInfo, nodes[0].InvariantName);
 

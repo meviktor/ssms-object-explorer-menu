@@ -1,4 +1,4 @@
-﻿using SSMSObjectExplorerMenu.enums;
+﻿using SSMSObjectExplorerMenu.extendedfiltering;
 using SSMSObjectExplorerMenu.extensions;
 using SSMSObjectExplorerMenu.objects;
 using System;
@@ -24,28 +24,32 @@ namespace SSMSObjectExplorerMenu
 
 		public MenuItem GetMenuItem()
 		{
-			return new MenuItem(true, comboContext.Text, textName.Text, textPath.Text, checkExecute.Checked, checkConfirm.Checked, listViewUserDefinedParam.GetUserDefinedParams());
+			return new MenuItem(true, comboContext.Text, textName.Text, textPath.Text, checkExecute.Checked, checkConfirm.Checked, advancedFilterControl.Filter, listViewUserDefinedParam.GetUserDefinedParams());
 		}
 		
 		private void textName_TextChanged(object sender, EventArgs e)
 		{
-			ValidateInputs();
+			//ValidateInputs();
 		}
 
 		private void textPath_TextChanged(object sender, EventArgs e)
 		{
-			ValidateInputs();
+			//ValidateInputs();
 		}
 
-		private void ValidateInputs()
-		{ 
-			if (textName.Text.Trim().Length > 0
-				&& textPath.Text.Trim().Length > 0)
-			{
-				buttonOK.Enabled = true;
-				return;
-			}
-			buttonOK.Enabled = false;
+		private (bool isValid, string[] validationErrors) ValidateInputs()
+		{
+            var validationErrors = new List<string>();
+            if (textName.Text.Trim().Length == 0)
+                validationErrors.Add("Name cannot be empty.");
+            if (textPath.Text.Trim().Length == 0)
+                validationErrors.Add("Path cannot be empty.");
+
+            var (isFilterValid, error) = ExtendedFilteringProperties.ValidateForContext(comboContext.Text, $"{this.advancedFilterControl.Filter}");
+            if (!isFilterValid)
+                validationErrors.Add(error);
+
+            return (validationErrors.Count == 0, validationErrors.ToArray());
 		}
 
 		private void buttonOpen_Click(object sender, EventArgs e)
@@ -142,5 +146,20 @@ namespace SSMSObjectExplorerMenu
         }
 
         private IEnumerable<string> GetArgumentNamesInUse() => this.listViewUserDefinedParam.Items.Cast<ListViewItem>().Select(item => item.Text).Concat(Utils.ParametersFromContext);
+
+		private void buttonOK_Click(object sender, EventArgs e)
+		{
+			var (isValid, validationErrors) = ValidateInputs();
+			if (isValid)
+			{
+				this.DialogResult = DialogResult.OK;
+				this.Close();
+			}
+			else
+			{
+				var dlgTextErrors = string.Join(Environment.NewLine, validationErrors);
+                MessageBox.Show($"One- or more error(s) occurred:{Environment.NewLine}{dlgTextErrors}", "Menu item cannot be saved", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
     }
 }

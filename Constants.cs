@@ -10,6 +10,6 @@
         internal const string Table_Context = "Server/Database/Table";
         internal const string Column_Context = "Server/Database/Table/Column";
 
-        internal readonly string[] ExtendedFiltering_AllowedContexts = new string[] { Server_Context, Database_Context, Table_Context, Column_Context };
+        internal static readonly string[] ExtendedFiltering_AllowedContexts = new string[] { Server_Context, Database_Context, Table_Context, Column_Context };
     }
 }

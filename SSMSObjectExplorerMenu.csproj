@@ -39,7 +39,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
+    <DebugType>pdbonly</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -71,6 +71,12 @@
     <Compile Include="AddUserDefinedParameter.Designer.cs">
       <DependentUpon>AddUserDefinedParameter.cs</DependentUpon>
     </Compile>
+    <Compile Include="controls\AdvancedFilterControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="controls\AdvancedFilterControl.Designer.cs">
+      <DependentUpon>AdvancedFilterControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="extendedfiltering\ExtendedFiltering.cs" />
     <Compile Include="controls\ArgumentControl.cs">
       <SubType>UserControl</SubType>
@@ -93,6 +99,7 @@
     </Compile>
     <Compile Include="EnumConverter.cs" />
     <Compile Include="enums\UserDefinedArgumentType.cs" />
+    <Compile Include="extendedfiltering\ExtendedFilteringGuard.cs" />
     <Compile Include="extendedfiltering\ExtendedFilteringProperties.cs" />
     <Compile Include="extendedfiltering\PropertyTypes\Column.cs" />
     <Compile Include="extendedfiltering\PropertyTypes\Database.cs" />
@@ -193,6 +200,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AddUserDefinedParameter.resx">
       <DependentUpon>AddUserDefinedParameter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="controls\AdvancedFilterControl.resx">
+      <DependentUpon>AdvancedFilterControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="controls\ArgumentControl.resx">
       <DependentUpon>ArgumentControl.cs</DependentUpon>

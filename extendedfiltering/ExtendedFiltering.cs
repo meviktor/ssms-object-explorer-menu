@@ -4,6 +4,8 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
 {
     internal class ExtendedFiltering
     {
+        public const string Wildcard_Any = "*";
+
         private const string Server = "Server[@Name='{0}']";
         private const string Database = "Server[@Name='{0}']/Database[@Name='{1}']";
         private const string Table = "Server[@Name='{0}']/Database[@Name='{1}']/Table[@Name='{2}' and @Schema='{3}']";

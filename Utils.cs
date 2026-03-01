@@ -38,5 +38,13 @@ namespace SSMSObjectExplorerMenu
                 return new DateTimeOffset(utcNow.Year, utcNow.Month, utcNow.Day, 0, 0, 0, TimeSpan.Zero);
             }
         }
+
+        public static T EnumParse<T>(string value) where T : Enum
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            return (T)Enum.Parse(typeof(T), value);
+        }
     }
 }
