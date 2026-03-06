@@ -78,6 +78,7 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             if(menuItemContext == null)
                 throw new ArgumentNullException(nameof(menuItemContext), $"Parameter '{nameof(menuItemContext)}' cannot be null.");
 
+            // proceeding only for contexts: Server/Database/Table/Column
             if (!ExtendedFiltering_AllowedContexts.Contains(menuItemContext) && !string.IsNullOrEmpty(filter))
                 return (false, $"Providing additional filter for context '{menuItemContext}' is not allowed. Filter must be left empty.");
 
@@ -86,7 +87,7 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             ExtendedFilteringProperties props;
             try
             {
-                props = BuildFromNavigationContext(filter);
+                props = BuildFromNavigationContext(filter, menuItemContextLevel);
             }
             catch (ArgumentException ex)
             {
@@ -96,13 +97,10 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             if(!props.IsEmpty)
             {
                 var filterContextLevel = props.Context.Value;
-                //if ((filterContext == ContextLevel.Server && context != Constants.Server_Context) ||
-                //    (filterContext == ContextLevel.Database && context != Constants.Database_Context) ||
-                //    (filterContext == ContextLevel.Table && context != Constants.Table_Context) ||
-                //    (filterContext == ContextLevel.Column && context != Constants.Column_Context))
                 if(filterContextLevel < menuItemContextLevel)
                 {
-                    return (false, $"Additional filter targets '{filterContextLevel}' level, while it should target '{menuItemContext}' or a higher level.");
+                    // e.g. filter contains condition for columns, but the menu item meant to target tables instead
+                    return (false, $"Additional filter targets '{filterContextLevel}' level, while it should target '{menuItemContextLevel}' or a higher level.");
                 }
             }
 
@@ -172,8 +170,10 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
         /// Builds an <see cref="ExtendedFilteringProperties"/> instance from a navigation context string.
         /// </summary>
         /// <param name="navigationContext">The navigaton context belongs to the SSMS Object Explorer tree node.</param>
+        /// <param name="buildingForLevel">If we are creating/updating a filter for a menu item, the menu item's context - enables validating if the filter string is
+        /// appropriate for the menu item's context. Don't fill it otherwise.</param>
         /// <returns></returns>
-        internal static ExtendedFilteringProperties BuildFromNavigationContext(string navigationContext)
+        internal static ExtendedFilteringProperties BuildFromNavigationContext(string navigationContext, ContextLevel? buildingForLevel = null)
         {
             var navContextSections = navigationContext.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -228,6 +228,14 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
                 throw new ArgumentException(string.Format(lengthErrorTemplate, "database identifier", filter.Database.Name));
             if(filter.Server?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
                 throw new ArgumentException(string.Format(lengthErrorTemplate, "server identifier", filter.Server.Name));
+
+            // Validate for menu item context - navigationContext cannot contain "lower level" segments, even if they are not filtering (using the '*' wildcard)
+            // For example if the menu item's context is 'Table', you can't provide a segment with 'Column' type in the filter, like: Column[@Name='*']
+            if(buildingForLevel.HasValue &&
+               ((buildingForLevel == ContextLevel.Server && (filter.Database != null || filter.Table != null || filter.Column != null)) ||
+               (buildingForLevel == ContextLevel.Database && (filter.Table != null || filter.Column != null)) ||
+               (buildingForLevel == ContextLevel.Table && filter.Column != null)))
+                throw new ArgumentException(string.Format($"Additional filter targets '{buildingForLevel}' level. It cannot contain wildcard segment(s) for lower level(s)."));
 
             return filter;
         }

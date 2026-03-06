@@ -150,15 +150,15 @@ namespace SSMSObjectExplorerMenu.extensions
             throw new ArgumentException($"Unknown {nameof(T)} value.", nameof(context));
         }
 
-        public static T FromStringDescription<T>(this string description) where T : Enum
+        public static T? FromStringDescription<T>(this string description) where T : struct, Enum
         {
             if(description is null)
 				throw new ArgumentNullException(nameof(description));
 
-			return typeof(T).GetFields()
-				.Where(e => Attribute.GetCustomAttribute(e, typeof(DescriptionAttribute)) is DescriptionAttribute attr && attr.Description == description)
-				.Select(e => (T)Enum.Parse(typeof(T), e.Name))
-				.Single();
+            return typeof(T).GetFields()
+                    .Where(e => Attribute.GetCustomAttribute(e, typeof(DescriptionAttribute)) is DescriptionAttribute attr && attr.Description == description)
+                    .Select(e => (T?)Enum.Parse(typeof(T), e.Name))
+                    .SingleOrDefault();
         }
 
         public static bool ValidForUserDefinedParameterType(this string value, UserDefinedParameterType type)
