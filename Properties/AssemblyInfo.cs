@@ -19,6 +19,9 @@ using System.Runtime.InteropServices;
 // COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
 
+// Testing support of internal components
+[assembly: InternalsVisibleTo("SSMSObjectExplorerMenu.Tests")]
+
 // Version information for an assembly consists of the following four values:
 //
 //      Major Version
