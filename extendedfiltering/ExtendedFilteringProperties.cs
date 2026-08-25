@@ -55,10 +55,10 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
         {
             get
             {
-                if (Column != null && Column != Column.Any) return ContextLevel.Column;
-                if (Table != null && Table != Table.Any) return ContextLevel.Table;
-                if (Database != null && Database != Database.Any) return ContextLevel.Database;
-                if (Server != null && Server != Server.Any) return ContextLevel.Server;
+                if (Column.IsActiveFilter) return ContextLevel.Column;
+                if (Table.IsActiveFilter) return ContextLevel.Table;
+                if (Database.IsActiveFilter) return ContextLevel.Database;
+                if (Server.IsActiveFilter) return ContextLevel.Server;
 
                 return null;
             }
@@ -108,74 +108,6 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
         }
 
         /// <summary>
-        /// Checks if the filtering properties of an SSMS Object Explorer node complies to the filtering properties of a <see cref="MenuItem"/>.
-        /// </summary>
-        /// <param name="subject">The filtering properites built from the node's navigation context.</param>
-        /// <param name="expectation">The filtering properties of a <see cref="MenuItem"/> (custom command).</param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException">If source or target is null.</exception>
-        internal static bool ComplyTo(ExtendedFilteringProperties subject, ExtendedFilteringProperties expectation)
-        {
-            if (subject is null)
-                throw new ArgumentNullException(nameof(subject), $"Parameter '{nameof(subject)}' cannot be null.");
-            // TODO: should we treat similar null as if expectation.IsEmpty == true?
-            if (expectation is null)
-                throw new ArgumentNullException(nameof(expectation), $"Parameter '{nameof(expectation)}' cannot be null.");
-            if (subject.IsEmpty)
-                throw new ArgumentException(nameof(subject), $"Parameter '{nameof(subject)}' does not filter for anything.");
-
-            if (expectation.IsEmpty)
-                return true;
-
-            // E.g. node is 'Server' and menuItem is 'Table', node is 'Database' and menuItem is 'Column' ...
-            // In these cases our filter contains such codition which is not applicable on the node, like: checking table name on a 'Server' node.
-            if (subject.Context > expectation.Context)
-                return false;
-
-            // TODO: what if the subject (and so its context) is 'Column' but the filter's context is 'Server' ?? Then this will probably fail (with NullReferenceException on accessing Column.Name).
-            //       solution: check if our filter (expectation) targets also the 'Column' level. If not, go ahead as we don't have any constraints for column name.
-            // Column does not match while targeting column level.
-            if (subject.Context == ContextLevel.Column && subject.Column.Name != expectation.Column.Name)
-                return false;
-
-            // TODO: this section has the same issue like the above one. Our filter must have some conditions on Table level, 'Any' at least (this means filter must have level 'Column' or 'Table')
-            // Wrap the tableOrSchemaNotMatch evaluation in an if block
-
-            // Table does not match. It's only relevant, if the MenuItem's filter:
-            // - Targets the table level, or
-            // - Targets a column, but also filters for table name/schema
-            var tableOrSchemaNotMatch = 
-                // Filtering for table name & schema: if any of them does not match, it's a fail
-                (expectation.Table?.Name != Wildcard_Any && expectation.Table?.Schema != Wildcard_Any && (subject.Table?.Name != expectation.Table?.Name || subject.Table?.Schema != expectation.Table?.Schema))
-                // Filtering for table name only: if table name does not match, it's a fail
-                || (expectation.Table?.Name != Wildcard_Any && expectation.Table?.Schema == Wildcard_Any && subject.Table?.Name != expectation.Table?.Name)
-                // Filtering for schema only: if schema does not match, it's a fail
-                || (expectation.Table?.Name == Wildcard_Any && expectation.Table?.Schema != Wildcard_Any && subject.Table?.Schema != expectation.Table?.Schema);
-
-            if (tableOrSchemaNotMatch && (subject.Context == ContextLevel.Table || (subject.Context < ContextLevel.Table && expectation.Table != Table.Any)))
-                return false;
-
-            // TODO: same... in case your filter filters only for Server, this condition will fail, however you didn't have any restriction regarding the database name...
-
-            // Database does not match. It's only relevant, if the MenuItem's filter:
-            // - Targets the database level, or
-            // - Targets a column or a table, but also filters for database name
-            if ((subject.Database?.Name != expectation.Database?.Name) &&
-                (subject.Context == ContextLevel.Database || (subject.Context < ContextLevel.Database && expectation.Database != Database.Any)))
-                return false;
-
-            // Server does not match. It's only relevant, if the MenuItem's filter:
-            // - Targets the server level, or
-            // - Targets a column, a table, or a database, but also filters for server name
-            if ((subject.Server?.Name != expectation.Server?.Name) &&
-                (subject.Context == ContextLevel.Server || (subject.Context < ContextLevel.Server && expectation.Server != Server.Any)))
-                return false;
-
-            // All checks passed. Object Explorer node complies to MenuItem filtering properties.
-            return true;
-        }
-
-        /// <summary>
         /// Builds an <see cref="ExtendedFilteringProperties"/> instance from a navigation context string.
         /// </summary>
         /// <param name="navigationContext">The navigaton context belongs to the SSMS Object Explorer tree node.</param>
@@ -184,9 +116,9 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
         /// <returns></returns>
         internal static ExtendedFilteringProperties BuildFromNavigationContext(string navigationContext, ContextLevel? buildingForLevel = null)
         {
-            var navContextSections = navigationContext.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var navContextSections = navigationContext.Split(['/'], StringSplitOptions.RemoveEmptyEntries);
 
-            var parsedSections = navContextSections.Select(s => IdentifySection(s)).ToArray();
+            var parsedSections = navContextSections.Select(IdentifySection).ToArray();
             if (parsedSections.Any(s => !s.IsIdentified))
             {
                 throw new ArgumentException(
@@ -249,37 +181,99 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             return filter;
         }
 
-        // TODO: create a model/DTO called NavContextSection instead?
-        private static (bool IsIdentified, string Kind, (string Name, string Value)[] Properties) IdentifySection(string section)
+        private static NavContextSection IdentifySection(string section)
         {
             var serverMatch = Server.Regex.Match(section);
             if (serverMatch.Success)
             {
-                return (true, nameof(Server), new (string, string)[] { (nameof(PropertyTypes.Server.Name), serverMatch.Groups[1].Value) });
+                return new () { Kind = nameof(Server), Properties = [(nameof(PropertyTypes.Server.Name), serverMatch.Groups[1].Value)] };
             }
 
             var databaseMatch = Database.Regex.Match(section);
             if (databaseMatch.Success)
             {
-                return (true, nameof(Database), new (string, string)[] { (nameof(PropertyTypes.Database.Name), databaseMatch.Groups[1].Value) });
+                return new() { Kind = nameof(Database), Properties = [(nameof(PropertyTypes.Database.Name), databaseMatch.Groups[1].Value)] };
             }
 
             var tableMatch = Table.Regex.Match(section);
             if (tableMatch.Success)
             {
-                return (true, nameof(Table), new (string, string)[] { 
-                    (nameof(PropertyTypes.Table.Name), tableMatch.Groups[1].Value),
-                    (nameof(PropertyTypes.Table.Schema), tableMatch.Groups[2].Value)
-                });
+                return new() { Kind = nameof(Table), Properties = [(nameof(PropertyTypes.Table.Name), tableMatch.Groups[1].Value), (nameof(PropertyTypes.Table.Schema), tableMatch.Groups[2].Value)] };
             }
 
             var columnMatch = Column.Regex.Match(section);
             if (columnMatch.Success)
             {
-                return (true, nameof(Column), new (string, string)[] { (nameof(PropertyTypes.Column.Name), columnMatch.Groups[1].Value) });
+                return new() { Kind = nameof(Column), Properties = [(nameof(PropertyTypes.Column.Name), columnMatch.Groups[1].Value)] };
             }
 
-            return (false, null, null);
+            return new() { Kind = null, Properties = null };
+        }
+
+        class NavContextSection()
+        {
+            internal bool IsIdentified => !string.IsNullOrEmpty(Kind);
+
+            internal string Kind { get; set; }
+
+            internal (string Name, string Value)[] Properties { get; set; }
+        }
+    }
+
+    internal static class ExtendedFilteringPropertiesExtensions
+    {
+        internal static bool IsNullOrEmpty(this ExtendedFilteringProperties props) => props is null || props.IsEmpty;
+
+        /// <summary>
+        /// Applies the filter of a <see cref="MenuItem"/> on an SSMS Object Explorer node.
+        /// </summary>
+        /// <param name="node">The <see cref="ExtendedFilteringProperties"/> representing the node.</param>
+        /// <param name="filter">The <see cref="ExtendedFilteringProperties"/> representing the filter.</param>
+        /// <returns>True if the node passes the filter's criteria, false otherwise.</returns>
+        /// <exception cref="ArgumentNullException">If node is null.</exception>
+        internal static bool ApplyFiltering(this ExtendedFilteringProperties node, ExtendedFilteringProperties filter)
+        {
+            if (node is null)
+                throw new ArgumentNullException(nameof(node), $"Parameter '{nameof(node)}' cannot be null.");
+            if (node.IsEmpty)
+                throw new ArgumentException(nameof(node), $"Parameter '{nameof(node)}' does not filter for anything.");
+
+            if (filter.IsNullOrEmpty())
+                return true;
+
+            // Our filter contains constraints for "lower level items", not applicable on the node. Example: filtering for table name on a 'Server' node.
+            if (filter.Context < node.Context)
+                return false;
+
+            // Failing on column name: node is column, filter applies on columns; column name does not match.
+            if (node.Context == ContextLevel.Column && filter.Column.IsActiveFilter && node.Column.Name != filter.Column.Name)
+                return false;
+
+            // Failing on table name and/or schema: node is column or table, filter applies on tables; table name/schema does not match.
+            if (node.Context <= ContextLevel.Table && filter.Table.IsActiveFilter)
+            {
+                var tableOrSchemaNotMatch =
+                    // Filtering for table name & schema: if any of them does not match, it's a fail
+                    (filter.Table?.Name != Wildcard_Any && filter.Table?.Schema != Wildcard_Any && (node.Table?.Name != filter.Table?.Name || node.Table?.Schema != filter.Table?.Schema))
+                    // Filtering for table name only: if table name does not match, it's a fail
+                    || (filter.Table?.Name != Wildcard_Any && filter.Table?.Schema == Wildcard_Any && node.Table?.Name != filter.Table?.Name)
+                    // Filtering for schema only: if schema does not match, it's a fail
+                    || (filter.Table?.Name == Wildcard_Any && filter.Table?.Schema != Wildcard_Any && node.Table?.Schema != filter.Table?.Schema);
+
+                if (tableOrSchemaNotMatch)
+                    return false;
+            }
+
+            // Failing on database name: node is column, table or database, filter applies on databases; database name does not match.
+            if (node.Context <= ContextLevel.Database && filter.Database.IsActiveFilter && node.Database?.Name != filter.Database?.Name)
+                return false;
+
+            // Failing on server name: any kind of node, filter applies on servers; server name does not match.
+            if (filter.Server.IsActiveFilter && node.Server?.Name != filter.Server?.Name)
+                return false;
+
+            // Node passed filtering
+            return true;
         }
     }
 

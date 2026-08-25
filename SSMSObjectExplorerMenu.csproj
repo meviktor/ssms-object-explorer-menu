@@ -30,6 +30,7 @@
     <RootNamespace>SSMSObjectExplorerMenu</RootNamespace>
     <AssemblyName>SSMSObjectExplorerMenu</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <LangVersion>latest</LangVersion>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
     <IncludeDebugSymbolsInVSIXContainer>true</IncludeDebugSymbolsInVSIXContainer>
@@ -109,6 +110,7 @@
     <Compile Include="extendedfiltering\PropertyTypes\Table.cs" />
     <Compile Include="extensions\Extensions.cs" />
     <Compile Include="extensions\UIExtensions.cs" />
+    <Compile Include="FilteringExtensions.cs" />
     <Compile Include="objects\ComboBoxItem.cs" />
     <Compile Include="objects\CustomListDefaultValueModel.cs" />
     <Compile Include="objects\MenuItemErrorModel.cs" />
@@ -206,6 +208,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="controls\ArgumentControl.resx">
       <DependentUpon>ArgumentControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="controls\DefaultValueControl.resx">
+      <DependentUpon>DefaultValueControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="EnterUserDefinedArguments.resx">
       <DependentUpon>EnterUserDefinedArguments.cs</DependentUpon>
