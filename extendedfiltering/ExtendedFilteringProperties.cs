@@ -25,7 +25,7 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
     /// </summary>
     internal class ExtendedFilteringProperties
     {
-        private static byte SQL_SERVER_IDENTIFIER_MAX_LENGTH = 128;
+        private const byte SQL_SERVER_IDENTIFIER_MAX_LENGTH = 128;
 
         internal Server Server { get; private set; }
 
@@ -39,7 +39,7 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
 
         internal ExtendedFilteringProperties(Server server, Database database = null, Table table = null, Column column = null)
         {
-            if(server is null)
+            if (server is null)
                 throw new ArgumentNullException(nameof(server), $"Parameter '{nameof(server)}' cannot be null.");
 
             Server = server;
@@ -75,7 +75,7 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
 
         internal static (bool IsValid, string Error) ValidateForContext(string menuItemContext, string filter)
         {
-            if(menuItemContext == null)
+            if (menuItemContext == null)
                 throw new ArgumentNullException(nameof(menuItemContext), $"Parameter '{nameof(menuItemContext)}' cannot be null.");
 
             // proceeding only for contexts: Server/Database/Table/Column
@@ -94,10 +94,10 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
                 return (false, $"Invalid additional filter: {ex.Message}");
             }
 
-            if(!props.IsEmpty)
+            if (!props.IsEmpty)
             {
                 var filterContextLevel = props.Context.Value;
-                if(filterContextLevel < menuItemContextLevel)
+                if (filterContextLevel < menuItemContextLevel)
                 {
                     // e.g. filter contains condition for columns, but the menu item meant to target tables instead
                     return (false, $"Additional filter targets '{filterContextLevel}' level, while it should target '{menuItemContextLevel}' or a higher level.");
@@ -110,15 +110,16 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
         /// <summary>
         /// Checks if the filtering properties of an SSMS Object Explorer node complies to the filtering properties of a <see cref="MenuItem"/>.
         /// </summary>
-        /// <param name="subject">The filtering properites built from the navigation context of a node in the SSMS Object Explorer tree.</param>
+        /// <param name="subject">The filtering properites built from the node's navigation context.</param>
         /// <param name="expectation">The filtering properties of a <see cref="MenuItem"/> (custom command).</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">If source or target is null.</exception>
         internal static bool ComplyTo(ExtendedFilteringProperties subject, ExtendedFilteringProperties expectation)
         {
-            if(subject is null)
+            if (subject is null)
                 throw new ArgumentNullException(nameof(subject), $"Parameter '{nameof(subject)}' cannot be null.");
-            if(expectation is null)
+            // TODO: should we treat similar null as if expectation.IsEmpty == true?
+            if (expectation is null)
                 throw new ArgumentNullException(nameof(expectation), $"Parameter '{nameof(expectation)}' cannot be null.");
             if (subject.IsEmpty)
                 throw new ArgumentException(nameof(subject), $"Parameter '{nameof(subject)}' does not filter for anything.");
@@ -131,9 +132,14 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             if (subject.Context > expectation.Context)
                 return false;
 
+            // TODO: what if the subject (and so its context) is 'Column' but the filter's context is 'Server' ?? Then this will probably fail (with NullReferenceException on accessing Column.Name).
+            //       solution: check if our filter (expectation) targets also the 'Column' level. If not, go ahead as we don't have any constraints for column name.
             // Column does not match while targeting column level.
             if (subject.Context == ContextLevel.Column && subject.Column.Name != expectation.Column.Name)
                 return false;
+
+            // TODO: this section has the same issue like the above one. Our filter must have some conditions on Table level, 'Any' at least (this means filter must have level 'Column' or 'Table')
+            // Wrap the tableOrSchemaNotMatch evaluation in an if block
 
             // Table does not match. It's only relevant, if the MenuItem's filter:
             // - Targets the table level, or
@@ -149,12 +155,15 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             if (tableOrSchemaNotMatch && (subject.Context == ContextLevel.Table || (subject.Context < ContextLevel.Table && expectation.Table != Table.Any)))
                 return false;
 
+            // TODO: same... in case your filter filters only for Server, this condition will fail, however you didn't have any restriction regarding the database name...
+
             // Database does not match. It's only relevant, if the MenuItem's filter:
             // - Targets the database level, or
             // - Targets a column or a table, but also filters for database name
             if ((subject.Database?.Name != expectation.Database?.Name) &&
                 (subject.Context == ContextLevel.Database || (subject.Context < ContextLevel.Database && expectation.Database != Database.Any)))
                 return false;
+
             // Server does not match. It's only relevant, if the MenuItem's filter:
             // - Targets the server level, or
             // - Targets a column, a table, or a database, but also filters for server name
@@ -186,7 +195,7 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             }
 
             var duplicatedSectionKinds = parsedSections.GroupBy(s => s.Kind).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
-            if(duplicatedSectionKinds.Any())
+            if (duplicatedSectionKinds.Any())
             {
                 throw new ArgumentException(
                     $"'{navigationContext}' contains duplicated sections: {string.Join(", ", duplicatedSectionKinds)}.");
@@ -220,18 +229,18 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             var lengthErrorTemplate = $"The provided {{0}} '{{1}}' exceeds maximum length of {SQL_SERVER_IDENTIFIER_MAX_LENGTH} characters.";
             if (filter.Column?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
                 throw new ArgumentException(string.Format(lengthErrorTemplate, "column identifier", filter.Column.Name));
-            if(filter.Table?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
+            if (filter.Table?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
                 throw new ArgumentException(string.Format(lengthErrorTemplate, "table identifier", filter.Table.Name));
             if (filter.Table?.Schema.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
                 throw new ArgumentException(string.Format(lengthErrorTemplate, "schema identifier", filter.Table.Schema));
             if (filter.Database?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
                 throw new ArgumentException(string.Format(lengthErrorTemplate, "database identifier", filter.Database.Name));
-            if(filter.Server?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
+            if (filter.Server?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
                 throw new ArgumentException(string.Format(lengthErrorTemplate, "server identifier", filter.Server.Name));
 
             // Validate for menu item context - navigationContext cannot contain "lower level" segments, even if they are not filtering (using the '*' wildcard)
-            // For example if the menu item's context is 'Table', you can't provide a segment with 'Column' type in the filter, like: Column[@Name='*']
-            if(buildingForLevel.HasValue &&
+            // For example: if the menu item's context is 'Table', you can't provide a segment with 'Column' type in the filter, like: Column[@Name='*'] or Column[@Name='Id']
+            if (buildingForLevel.HasValue &&
                ((buildingForLevel == ContextLevel.Server && (filter.Database != null || filter.Table != null || filter.Column != null)) ||
                (buildingForLevel == ContextLevel.Database && (filter.Table != null || filter.Column != null)) ||
                (buildingForLevel == ContextLevel.Table && filter.Column != null)))
@@ -240,6 +249,7 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             return filter;
         }
 
+        // TODO: create a model/DTO called NavContextSection instead?
         private static (bool IsIdentified, string Kind, (string Name, string Value)[] Properties) IdentifySection(string section)
         {
             var serverMatch = Server.Regex.Match(section);
