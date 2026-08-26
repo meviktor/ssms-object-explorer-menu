@@ -9,9 +9,12 @@ This is a curated list of useful extensions and add-ins for SQL Server Managemen
 | [SSMS Plus](https://github.com/akarzazi/SSMSPlus)            | Free       | Yes         |
 | [SSMS Schema Folders](https://github.com/nicholas-ross/SSMS-Schema-Folders) | Free       | Yes         |
 | [SSMS Executor](https://github.com/tkwj/ssms-executor)       | Free       | Yes         |
-| [SQL Formatter for SSMS (preview)](https://www.vsixgallery.com/extension/SqlFormatter.70C3AE03-7E78-41F3-8FE0-11BF482F5F69)       | Free       | Yes         |
+| [SQL Formatter](https://www.vsixgallery.com/extension/SqlFormatter.fdf96f87-bc61-43ec-bc52-50fd011fd54f)       | Free       | Yes         |
 | [SQL Server Compact and SQLite Toolbox for SSMS](https://github.com/ErikEJ/SqlCeToolbox)       | Free       | Yes         |
 | [AxialSqlTools](https://github.com/Axial-SQL/AxialSqlTools)  | Free       | Yes         |
+| [SSMS EnvTabs](https://github.com/Blake-goofy/SSMS-EnvTabs)  | Free       | Yes         |
+| [SQL Database Project Power Tools for SSMS](https://www.vsixgallery.com/extension/SqlProjectsPowerTools.SSMS.D7DABDC8-FE46-4DA4-BED8-2EAF1A2A578D)       | Free       | Yes         |
+| [Statistics Parser Extension](https://github.com/BrentOzarULTD/StatisticsParserExtension)       | Free       | Yes         |
 |                                                              |            |             |
 | [SSMS Tool Pack](https://www.ssmstoolspack.com)              | Commercial | No          |
 | [SSMSBoost](https://www.ssmsboost.com)                       | Commercial | No          |
@@ -22,6 +25,8 @@ This is a curated list of useful extensions and add-ins for SQL Server Managemen
 | [Version SQL](https://www.versionsql.com)                    | Commercial | No          |
 | [SQL Shades](https://www.sqlshades.com)                      | Free       | No          |
 | [SQL Enlight](https://sqlenlight.com)                        | Commercial | No          |
+| [SQLinForm Formatter](https://www.sqlinform.com/ssms-sql-formatter/)      | Commercial | No          |
+| [SQL Guard](https://sqlguard.app/)                           | Free       | No          |
 |                                                              |            |             |
 | [Redgate SQL Prompt](https://www.red-gate.com/products/sql-prompt) | Commercial | No          |
 | [Redgate SQL Search](https://www.red-gate.com/products/sql-search) | Free       | No          |

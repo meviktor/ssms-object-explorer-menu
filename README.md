@@ -10,6 +10,8 @@ The project homepage is [https://sqlmedic.com](https://sqlmedic.com).
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/brink-daniel/ssms-object-explorer-menu)](https://github.com/brink-daniel/ssms-object-explorer-menu/releases)
 [![GitHub license](https://img.shields.io/github/license/brink-daniel/ssms-object-explorer-menu)](https://github.com/brink-daniel/ssms-object-explorer-menu/blob/main/LICENSE)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/brink-daniel/ssms-object-explorer-menu/total)
+![GitHub Repo stars](https://img.shields.io/github/stars/brink-daniel/ssms-object-explorer-menu?style=flat)
 
 ![Object Explorer](images/ObjectExplorer.png)
 
@@ -149,7 +151,7 @@ where type_desc = '{OBJECT_TYPE}' and name like '{NAME_FILTER_EXP}';
 
 ### SQL Server Management Studio 22.x
 
-This extension has been tested and used with **SQL Server Management Studio 22.0.0**.
+This extension has been tested and used with **SQL Server Management Studio 22.8.1**.
 
 You can download the latest version of SSMS for free from [Microsoft](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms).
 
@@ -226,21 +228,28 @@ The Object Explorer Menu extension is intentionally lightweight and focused. It 
 
 ### How do I uninstall the Object Explorer Menu extension?
 
-To uninstall the Object Explorer Menu extension, simply delete the SSMSObjectExplorerMenu folder located at: `C:\Program Files\Microsoft SQL Server Management Studio 21\Release\Common7\IDE\Extensions`. 
+To uninstall the Object Explorer Menu extension, delete the SSMSObjectExplorerMenu folder located in the Extensions subfolder under `%LOCALAPPDATA%\Microsoft\SSMS`.
 
 After deleting the folder, restart SQL Server Management Studio to complete the uninstallation.
 
 
-
 ## Credits
 
-All development is done by [Daniel Brink](https://www.linkedin.com/in/brinkdaniel/).
+All development is done by [Daniel Brink](https://www.linkedin.com/in/brinkdaniel/) and [Viktor Mészáros](https://www.linkedin.com/in/viktor-m%C3%A9sz%C3%A1ros-73a960245/).
 
 Information on how to access the Object Explorer and TreeView control was learnt by studying Nicholas Ross's [SSMS-Schema-Folders](https://github.com/nicholas-ross/SSMS-Schema-Folders) project.
 
 
 
 ## Change Log
+
+### v4.1.2 (2026-03-31)
+
+* Removed the requirement for elevated rights during installation. The Object Explorer Menu now installs to `%localappdata%\Microsoft\SSMS`
+
+### v4.1.1 (2026-02-28)
+
+* Define custom parameters for menu items 
 
 ### v4.0 (2025-11-12)
 

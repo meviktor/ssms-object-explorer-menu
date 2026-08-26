@@ -20,6 +20,10 @@ namespace SSMSObjectExplorerMenu
 			comboContext.Text = nodeInfo.UrnPath;
             this.ActiveControl = textName;
 			buttonOpen.Visible = false;
+
+			listViewUserDefinedParam.Columns[0].Width = -2;
+			listViewUserDefinedParam.Columns[1].Width = -2;
+			listViewUserDefinedParam.Columns[2].Width = -2;
 		}
 
 		public MenuItem GetMenuItem()
@@ -99,11 +103,18 @@ namespace SSMSObjectExplorerMenu
             if (addDialog.ShowDialog() == DialogResult.OK)
             {
                 var newParam = addDialog.Parameter;
-                var newListViewItem = new ListViewItem { Text = newParam.Name, Tag = newParam };
+                var newListViewItem = new ListViewItem { Text = "{" + newParam.Name +"}", Tag = newParam };
                 newListViewItem.SubItems.Add(new ListViewItem.ListViewSubItem { Text = newParam.Type.ToStringDescription() });
-                listViewUserDefinedParam.Items.Add(newListViewItem);
-            }
-        }
+				newListViewItem.SubItems.Add(new ListViewItem.ListViewSubItem { Text = newParam.DefaultValueAsString });
+
+				listViewUserDefinedParam.Items.Add(newListViewItem);			
+
+			}
+
+			
+		}
+
+
 
         private void buttonEditUserDefinedParam_Click(object sender, EventArgs e)
         {
@@ -114,12 +125,13 @@ namespace SSMSObjectExplorerMenu
 				if (editDialog.ShowDialog() == DialogResult.OK)
 				{
 					var editedParam = editDialog.Parameter;
-					selectedItem.Text = editedParam.Name;
+					selectedItem.Text = "{" + editedParam.Name + "}";
 					selectedItem.SubItems[1].Text = editedParam.Type.ToStringDescription();
-                    selectedItem.Tag = editedParam;
+					selectedItem.SubItems[2].Text = editedParam.DefaultValueAsString;
+					selectedItem.Tag = editedParam;
                 }
             }
-        }
+		}
 
         private void buttonRemoveUserDefinedParam_Click(object sender, EventArgs e)
         {
@@ -132,7 +144,7 @@ namespace SSMSObjectExplorerMenu
                     this.listViewUserDefinedParam.Items.Remove(item);
                 }
             }
-        }
+		}
 
         private void listViewUserDefinedParam_SelectedIndexChanged(object sender, EventArgs e)
         {
