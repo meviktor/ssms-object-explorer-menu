@@ -94,16 +94,6 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
                 return (false, $"Invalid additional filter: {ex.Message}");
             }
 
-            if (!props.IsEmpty)
-            {
-                var filterContextLevel = props.Context.Value;
-                if (filterContextLevel < menuItemContextLevel)
-                {
-                    // e.g. filter contains condition for columns, but the menu item meant to target tables instead
-                    return (false, $"Additional filter targets '{filterContextLevel}' level, while it should target '{menuItemContextLevel}' or a higher level.");
-                }
-            }
-
             return (true, null);
         }
 
