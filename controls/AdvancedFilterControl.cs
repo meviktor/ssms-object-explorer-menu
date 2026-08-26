@@ -10,7 +10,7 @@ namespace SSMSObjectExplorer.controls
     {
         private ComboBox _contextComboBox = null;
         private string _currentContext;
-        private readonly Dictionary<string, (bool Server, bool Database, bool Table, bool Column)> _contextFields = new Dictionary<string, (bool, bool, bool, bool)>
+        private readonly Dictionary<string, (bool Server, bool Database, bool Table, bool Column)> _contextFields = new()
         {
             { Constants.Server_Context, (true, false, false, false) },
             { Constants.Database_Context, (true, true, false, false) },
@@ -23,8 +23,10 @@ namespace SSMSObjectExplorer.controls
             get => _contextComboBox;
             set
             {
-                if(value != null)
+                if (value != null)
                 {
+                    _contextComboBox?.SelectedValueChanged -= HandleMenuItemContextChange;
+
                     _contextComboBox = value;
                     _currentContext = _contextComboBox.SelectedValue as string;
 
@@ -34,25 +36,14 @@ namespace SSMSObjectExplorer.controls
             }
         }
 
-        public string Filter
-        {
-            get
+        public string Filter => _currentContext switch
             {
-                switch(_currentContext)
-                {
-                    case Constants.Server_Context:
-                        return ServerFilter(serverTextBox.Text);
-                    case Constants.Database_Context:
-                        return DatabaseFilter(databaseTextBox.Text, serverTextBox.Text);
-                    case Constants.Table_Context:
-                        return TableFilter(tableTextBox.Text, schemaTextBox.Text, databaseTextBox.Text, serverTextBox.Text);
-                    case Constants.Column_Context:
-                        return ColumnFilter(columnTextBox.Text, tableTextBox.Text, schemaTextBox.Text, databaseTextBox.Text, serverTextBox.Text);
-                    default:
-                        return string.Empty;
-                }
-            }
-        }
+                Constants.Server_Context => ServerFilter(serverTextBox.Text),
+                Constants.Database_Context => DatabaseFilter(databaseTextBox.Text, serverTextBox.Text),
+                Constants.Table_Context => TableFilter(tableTextBox.Text, schemaTextBox.Text, databaseTextBox.Text, serverTextBox.Text),
+                Constants.Column_Context => ColumnFilter(columnTextBox.Text, tableTextBox.Text, schemaTextBox.Text, databaseTextBox.Text, serverTextBox.Text),
+                _ => string.Empty,
+            };
 
         public AdvancedFilterControl()
         {
@@ -61,7 +52,7 @@ namespace SSMSObjectExplorer.controls
 
         public void HandleMenuItemContextChange(object sender, EventArgs e)
         {
-            if(sender is ComboBox contextComboBox)
+            if (sender is ComboBox contextComboBox)
             {
                 var selectedContext = contextComboBox.SelectedItem as string;
                 // Selected context in the combo box has changed or the dialog is initializing
@@ -76,7 +67,7 @@ namespace SSMSObjectExplorer.controls
 
         private void ChangeControlStates(string selectedContext)
         {
-            if(selectedContext != null && _contextFields.TryGetValue(selectedContext, out var states))
+            if (selectedContext != null && _contextFields.TryGetValue(selectedContext, out var states))
             {
                 ChangeControlStates(states.Server, states.Database, states.Table, states.Column);
                 return;
