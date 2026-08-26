@@ -2,7 +2,6 @@
 using SSMSObjectExplorerMenu.extensions;
 using SSMSObjectExplorerMenu.objects;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -18,7 +17,7 @@ namespace SSMSObjectExplorerMenu.controls
         private const int PADDING_TOP_BOTTOM = 2;
         private const byte UNIQUEIDENTIFIER_LENGTH = 36;
 
-        private Label _labelParameterName;
+        private readonly Label _labelParameterName;
         private Control _valueControl;
 
         public UserDefinedParameter Parameter { get; private set; }
@@ -26,7 +25,7 @@ namespace SSMSObjectExplorerMenu.controls
 
         public ArgumentControl(UserDefinedParameter parameter, int width)
         {
-            if(!parameter.TryValidate(out IEnumerable<string> _))
+            if (!parameter.TryValidate(out var _))
             {
                 throw new ArgumentException("Parameter validation has failed.", nameof(parameter));
             }
@@ -79,25 +78,16 @@ namespace SSMSObjectExplorerMenu.controls
             this.Controls.Add(this._valueControl);
         }
 
-        public bool IsValid()
-        {
-            switch (Parameter.Type)
+        public bool IsValid() => 
+            Parameter.Type switch
             {
-                case UserDefinedParameterType.UniqueIdentifier:
-                    return Guid.TryParse(_valueControl.Text, out _);
-                case UserDefinedParameterType.DateTime2:
-                    return DateTime.TryParse(_valueControl.Text, out _);
-                case UserDefinedParameterType.DateTimeOffset:
-                    return DateTimeOffset.TryParse(_valueControl.Text, out _);
-                case UserDefinedParameterType.Nvarchar:
-                case UserDefinedParameterType.Int:
-                case UserDefinedParameterType.Bit:
-                case UserDefinedParameterType.CustomList:
-                    return true;
-                default:
-                    throw new NotImplementedException($"Validation for parameter type {Parameter.Type} has not been implemented.");
-            }
-        }
+                UserDefinedParameterType.UniqueIdentifier => Guid.TryParse(_valueControl.Text, out _),
+                UserDefinedParameterType.DateTime2 => DateTime.TryParse(_valueControl.Text, out _),
+                UserDefinedParameterType.DateTimeOffset => DateTimeOffset.TryParse(_valueControl.Text, out _),
+                UserDefinedParameterType.Nvarchar or UserDefinedParameterType.Int or UserDefinedParameterType.Bit or UserDefinedParameterType.CustomList => true,
+                _ => throw new NotImplementedException($"Validation for parameter type {Parameter.Type} has not been implemented."),
+            };
+        
 
         private void Init_Uniqueidentifier()
         {
@@ -146,9 +136,9 @@ namespace SSMSObjectExplorerMenu.controls
             {
                 /// Deferred intialization of ComboBox selected value. See explanation in class <see cref="DefaultValueControl"/> for details.
                 comboBox.HandleCreated += (s, e) => {
-                    comboBox.BeginInvoke((Action)(() => {
+                    comboBox.BeginInvoke(() => {
                         comboBox.SelectedValue = valueToSelect;
-                    }));
+                    });
                 };
             }
 

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Drawing.Design;
 using System.Linq;
+using SSMSObjectExplorerMenu.extendedfiltering;
 
 namespace SSMSObjectExplorerMenu.objects
 {
@@ -57,7 +58,7 @@ namespace SSMSObjectExplorerMenu.objects
         [DisplayName("User-defined parameters")]
         [Description("List of user-deifned parameters can be used in the T-SQL script.")]
 		[Editor(typeof(CollectionEditor), typeof(UITypeEditor))]
-        public BindingList<UserDefinedParameter> UserDefinedParameters { get; private set; } = new BindingList<UserDefinedParameter>();
+        public BindingList<UserDefinedParameter> UserDefinedParameters { get; private set; } = [];
 
         [Category("Menu item")]
         [DisplayName("Additional filter")]
@@ -94,13 +95,13 @@ namespace SSMSObjectExplorerMenu.objects
 		{
             validationErrors = UserDefinedParameters.Select(
                 // reserved names: names coming from context + names of other user-defined parameters of the MenuItem
-                p => p.TryValidate(out IEnumerable<string> paramErrors, Utils.ParametersFromContext.Concat(UserDefinedParameters.Where(pa => pa != p).Select(pa => pa.Name)))
+                p => p.TryValidate(out var paramErrors, Utils.ParametersFromContext.Concat(UserDefinedParameters.Where(pa => pa != p).Select(pa => pa.Name)))
 					? null : new MenuItemErrorModel { MenuItemName = Name, ErrorMessages = paramErrors })
 				.Where(e => e != null);
 
-			var additionalFilter = extendedfiltering.ExtendedFilteringProperties.ValidateForContext(Context, AdditionalFilter);
+			var additionalFilter = ExtendedFilteringProperties.ValidateForContext(Context, AdditionalFilter);
 			if(!additionalFilter.IsValid)
-				validationErrors = validationErrors.Append(new MenuItemErrorModel { MenuItemName = Name, ErrorMessages = new[] { additionalFilter.Error } });
+				validationErrors = validationErrors.Append(new MenuItemErrorModel { MenuItemName = Name, ErrorMessages = [additionalFilter.Error] });
 
             return !validationErrors.Any();
         }

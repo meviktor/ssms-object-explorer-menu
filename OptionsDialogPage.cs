@@ -18,7 +18,7 @@ namespace SSMSObjectExplorerMenu
 		[Category("General options")]
 		[DisplayName("Menu items")]
 		[Description("Collection of menu items")]
-		public List<MenuItem> MenuItems { get; set; } = new List<MenuItem>();
+		public List<MenuItem> MenuItems { get; set; } = [];
 
 		[DefaultValue(true)]
 		[Category("General options")]
@@ -109,10 +109,9 @@ namespace SSMSObjectExplorerMenu
 
 		private bool TryValidate(out List<MenuItemErrorModel> validationErrors)
 		{
-			validationErrors = MenuItems.Select(mi => mi.TryValidate(out IEnumerable<MenuItemErrorModel> errors) ? null : errors)
+			validationErrors = [.. MenuItems.Select(mi => mi.TryValidate(out var errors) ? null : errors)
 				.Where(e => e != null)
-				.SelectMany(e => e)
-				.ToList();
+				.SelectMany(e => e)];
             return !validationErrors.Any();
         }
 

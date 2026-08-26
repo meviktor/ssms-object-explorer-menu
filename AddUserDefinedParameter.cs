@@ -13,17 +13,16 @@ namespace SSMSObjectExplorerMenu
 {
     public partial class AddUserDefinedParameter : Form
     {
-        private IEnumerable<string> _paramNamesInUse;
-        private UserDefinedParameter _parameter;
-
-        private DefaultValueControl defaultValueControl;
+        private readonly IEnumerable<string> _paramNamesInUse;
+        private readonly UserDefinedParameter _parameter;
+        private readonly DefaultValueControl defaultValueControl;
         private ObservableListView listViewCustomList;
 
         public UserDefinedParameter Parameter
         {
             get
             {
-                if (!_parameter.TryValidate(out IEnumerable<string> _, _paramNamesInUse) || this.DialogResult != DialogResult.OK)
+                if (!_parameter.TryValidate(out var _, _paramNamesInUse) || this.DialogResult != DialogResult.OK)
                 {
                     throw new InvalidOperationException("Dialog is in invalid state.");
                 }
@@ -50,7 +49,7 @@ namespace SSMSObjectExplorerMenu
                         ValueSetOfCustomList = parameterToEdit.ValueSetOfCustomList
                     }
                 : new UserDefinedParameter { Name = string.Empty, Type = UserDefinedParameterType.UniqueIdentifier, DefaultValueAsString = string.Empty };
-            _paramNamesInUse = edit ? paramNamesInUse.Except(new[] { parameterToEdit.Name }) : paramNamesInUse;
+            _paramNamesInUse = edit ? paramNamesInUse.Except([parameterToEdit.Name]) : paramNamesInUse;
 
             this.textBoxParameterName.MaxLength = UserDefinedParameter.NAME_MAX_LENGTH;
             this.textBoxParameterName.DataBindings.Add(nameof(textBoxParameterName.Text), _parameter, nameof(_parameter.Name), true, DataSourceUpdateMode.OnPropertyChanged);
@@ -61,7 +60,7 @@ namespace SSMSObjectExplorerMenu
                     AvailableOptions = parameterToEdit.ValueSetOfCustomList.Select(item => item.Value).ToList(),
                     DefaultValueSelected = parameterToEdit.DefaultValueAsString
                 } :
-                (object)_parameter.DefaultValueAsString;
+                _parameter.DefaultValueAsString;
 
             this.defaultValueControl = new DefaultValueControl(_parameter.Type, edit, presetValue);
             this.defaultValueControl.Location = new System.Drawing.Point(this.comboBoxParameterType.Location.X, this.labelDefaultValue.Location.Y); // Adjusting location next to label
@@ -72,42 +71,40 @@ namespace SSMSObjectExplorerMenu
                 Enum.GetValues(typeof(UserDefinedParameterType))
                     .Cast<UserDefinedParameterType>()
                     .Select(type => new ComboBoxItem<UserDefinedParameterType> { Displayed = type.ToStringDescription(), Value = type }).ToList();
-            this.comboBoxParameterType.DisplayMember = nameof(ComboBoxItem<UserDefinedParameterType>.Displayed);
-            this.comboBoxParameterType.ValueMember = nameof(ComboBoxItem<UserDefinedParameterType>.Value);
+            this.comboBoxParameterType.DisplayMember = nameof(ComboBoxItem<>.Displayed);
+            this.comboBoxParameterType.ValueMember = nameof(ComboBoxItem<>.Value);
             this.comboBoxParameterType.DataBindings.Add(nameof(comboBoxParameterType.SelectedValue), _parameter, nameof(_parameter.Type), true, DataSourceUpdateMode.OnPropertyChanged);
 
-            this.listViewCustomList.Items.AddRange(edit ?
-                parameterToEdit.ValueSetOfCustomList.Select(item => new ListViewItem(item.Value)).ToArray() :
-                Array.Empty<ListViewItem>()
-            );
+            this.listViewCustomList.Items.AddRange(edit ? [.. parameterToEdit.ValueSetOfCustomList.Select(item => new ListViewItem(item.Value))] : []);
             this.listViewCustomList.ItemsChanged += defaultValueControl.HandleCustomListOptionsChanged;
-            this.listViewCustomList.ItemsChanged += (_, e) => _parameter.ValueSetOfCustomList = new BindingList<StringListItem>(e.NewItems.Select(i => new StringListItem(i.Text)).ToList());
+            this.listViewCustomList.ItemsChanged += (_, e) => _parameter.ValueSetOfCustomList = new BindingList<StringListItem>([.. e.NewItems.Select(i => new StringListItem(i.Text))]);
 
             this.Text = edit ? "Edit user-defined parameter..." : this.Text;
         }
 
         private void InitializeCustomControlListViewCustomList()
         {
-            this.listViewCustomList = new ObservableListView();
-
-            this.listViewCustomList.HideSelection = false;
-            this.listViewCustomList.LabelEdit = true;
-            this.listViewCustomList.Location = new System.Drawing.Point(
-                this.labelCustomList.Location.X + 3, // Moving a bit to the right to align with the label text
-                this.labelCustomList.Location.Y + this.labelCustomList.Size.Height);
-            this.listViewCustomList.Name = "listViewCustomList";
-            this.listViewCustomList.Size = new System.Drawing.Size(225, 75);
-            this.listViewCustomList.TabIndex = 6;
-            this.listViewCustomList.UseCompatibleStateImageBehavior = false;
-            this.listViewCustomList.View = System.Windows.Forms.View.List;
-            this.listViewCustomList.SelectedIndexChanged += new System.EventHandler(this.listViewCustomList_SelectedIndexChanged);
+            this.listViewCustomList = new ()
+            {
+                HideSelection = false,
+                LabelEdit = true,
+                Location = new System.Drawing.Point(
+                    labelCustomList.Location.X + 3, // Moving a bit to the right to align with the label text
+                    labelCustomList.Location.Y + this.labelCustomList.Size.Height),
+                Name = "listViewCustomList",
+                Size = new System.Drawing.Size(225, 75),
+                TabIndex = 6,
+                UseCompatibleStateImageBehavior = false,
+                View = View.List,
+            };
+            this.listViewCustomList.SelectedIndexChanged += new EventHandler(listViewCustomList_SelectedIndexChanged);
 
             this.panelCustomList.Controls.Add(this.listViewCustomList);
         }
 
         private void buttonSave_Click(object sender, EventArgs e)
         {
-            if (!_parameter.TryValidate(out IEnumerable<string> validationErrors, _paramNamesInUse))
+            if (!_parameter.TryValidate(out var validationErrors, _paramNamesInUse))
             {
                 var errorMessageBuilder = new StringBuilder();
                 foreach(var error in validationErrors) errorMessageBuilder.AppendLine(error);

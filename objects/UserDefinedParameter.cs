@@ -34,12 +34,12 @@ namespace SSMSObjectExplorerMenu.objects
         [DisplayName("List of options")]
         [Description("List of options. If the parameter's data type is not \"List of options\", it is ignored.")]
         [Editor(typeof(CollectionEditor), typeof(UITypeEditor))]
-        public BindingList<StringListItem> ValueSetOfCustomList { get; set; } = new BindingList<StringListItem>();
+        public BindingList<StringListItem> ValueSetOfCustomList { get; set; } = [];
 
         public bool TryValidate(out IEnumerable<string> validationErrors, IEnumerable<string> reservedNames = null)
         {
             var errors = new List<string>();
-            if(!TryValidateName(Name, out IEnumerable<string> nameErrors, reservedNames))
+            if(!TryValidateName(Name, out var nameErrors, reservedNames))
             {
                 errors.AddRange(nameErrors);
             }
