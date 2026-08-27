@@ -1,5 +1,6 @@
 ﻿using SSMSObjectExplorerMenu.extendedfiltering;
 using SSMSObjectExplorerMenu.extendedfiltering.PropertyTypes;
+using static SSMSObjectExplorerMenu.Tests.extendedfiltering.TestSamples;
 
 namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
 {
@@ -8,86 +9,86 @@ namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
         [Theory]
         #region TestCases
         // Positive test cases: Column
-        [InlineData(true, ContextLevel.Column, TestSamples.Identifier_Valid)]
-        [InlineData(true, ContextLevel.Column, TestSamples.Identifier_Valid_Digits)]
-        [InlineData(true, ContextLevel.Column, TestSamples.Identifier_Valid_WithSpecialChars)]
-        [InlineData(true, ContextLevel.Column, TestSamples.Identifier_Valid_Any)]
+        [InlineData(true, ContextLevel.Column, Identifier_Valid)]
+        [InlineData(true, ContextLevel.Column, Identifier_Valid_Digits)]
+        [InlineData(true, ContextLevel.Column, Identifier_Valid_WithSpecialChars)]
+        [InlineData(true, ContextLevel.Column, Identifier_Valid_Any)]
         // Positive test cases: Table
-        [InlineData(true, ContextLevel.Table, TestSamples.Identifier_Valid, TestSamples.Identifier_Valid_Digits)]
-        [InlineData(true, ContextLevel.Table, TestSamples.Identifier_Valid_Digits, TestSamples.Identifier_Valid)]
-        [InlineData(true, ContextLevel.Table, TestSamples.Identifier_Valid_WithSpecialChars, TestSamples.Identifier_Valid)]
-        [InlineData(true, ContextLevel.Table, TestSamples.Identifier_Valid_Any, TestSamples.Identifier_Valid)]
-        [InlineData(true, ContextLevel.Table, TestSamples.Identifier_Valid, TestSamples.Identifier_Valid_Any)]
-        [InlineData(true, ContextLevel.Table, TestSamples.Identifier_Valid_Any, TestSamples.Identifier_Valid_Any)]
+        [InlineData(true, ContextLevel.Table, Identifier_Valid, Identifier_Valid_Digits)]
+        [InlineData(true, ContextLevel.Table, Identifier_Valid_Digits, Identifier_Valid)]
+        [InlineData(true, ContextLevel.Table, Identifier_Valid_WithSpecialChars, Identifier_Valid)]
+        [InlineData(true, ContextLevel.Table, Identifier_Valid_Any, Identifier_Valid)]
+        [InlineData(true, ContextLevel.Table, Identifier_Valid, Identifier_Valid_Any)]
+        [InlineData(true, ContextLevel.Table, Identifier_Valid_Any, Identifier_Valid_Any)]
         // Positive test cases: Database
-        [InlineData(true, ContextLevel.Database, TestSamples.Identifier_Valid)]
-        [InlineData(true, ContextLevel.Database, TestSamples.Identifier_Valid_Digits)]
-        [InlineData(true, ContextLevel.Database, TestSamples.Identifier_Valid_WithSpecialChars)]
-        [InlineData(true, ContextLevel.Database, TestSamples.Identifier_Valid_Any)]
+        [InlineData(true, ContextLevel.Database, Identifier_Valid)]
+        [InlineData(true, ContextLevel.Database, Identifier_Valid_Digits)]
+        [InlineData(true, ContextLevel.Database, Identifier_Valid_WithSpecialChars)]
+        [InlineData(true, ContextLevel.Database, Identifier_Valid_Any)]
         // Positive test cases: Server
-        [InlineData(true, ContextLevel.Server, TestSamples.Identifier_Valid)]
-        [InlineData(true, ContextLevel.Server, TestSamples.Identifier_Valid_Digits)]
-        [InlineData(true, ContextLevel.Server, TestSamples.Identifier_Valid_WithSpecialChars)]
-        [InlineData(true, ContextLevel.Server, TestSamples.Identifier_Valid_Any)]
-        [InlineData(true, ContextLevel.Server, TestSamples.Identifier_ContainsDot)]
-        [InlineData(true, ContextLevel.Server, TestSamples.Identifier_ContainsHyphen)]
+        [InlineData(true, ContextLevel.Server, Identifier_Valid)]
+        [InlineData(true, ContextLevel.Server, Identifier_Valid_Digits)]
+        [InlineData(true, ContextLevel.Server, Identifier_Valid_WithSpecialChars)]
+        [InlineData(true, ContextLevel.Server, Identifier_Valid_Any)]
+        [InlineData(true, ContextLevel.Server, Identifier_ContainsDot)]
+        [InlineData(true, ContextLevel.Server, Identifier_ContainsHyphen)]
         // Negative test cases: Column
         [InlineData(false, ContextLevel.Column, null)]
-        [InlineData(false, ContextLevel.Column, TestSamples.Identifier_Invalid_Empty)]
-        [InlineData(false, ContextLevel.Column, TestSamples.Identifier_Invalid_WhiteSpaceOnly)]
-        [InlineData(false, ContextLevel.Column, TestSamples.Identifier_Invalid_StartsWithDigit)]
-        [InlineData(false, ContextLevel.Column, TestSamples.Identifier_ContainsHyphen)]
-        [InlineData(false, ContextLevel.Column, TestSamples.Identifier_Invalid_ContainsSpace)]
-        [InlineData(false, ContextLevel.Column, TestSamples.Identifier_ContainsDot)]
-        [InlineData(false, ContextLevel.Column, TestSamples.Identifier_Invalid_ContainsComma)]
-        [InlineData(false, ContextLevel.Column, TestSamples.Identifier_Invalid_ContainsParentheses)]
-        [InlineData(false, ContextLevel.Column, TestSamples.Identifier_Invalid_ContainsBracket)]
-        [InlineData(false, ContextLevel.Column, TestSamples.Identifier_Invalid_ContainsNewLine)]
-        [InlineData(false, ContextLevel.Column, TestSamples.Identifier_Invalid_ContainsTab)]
-        [InlineData(false, ContextLevel.Column, TestSamples.Identifier_Invalid_LongerThan128Chars)]
+        [InlineData(false, ContextLevel.Column, Identifier_Invalid_Empty)]
+        [InlineData(false, ContextLevel.Column, Identifier_Invalid_WhiteSpaceOnly)]
+        [InlineData(false, ContextLevel.Column, Identifier_Invalid_StartsWithDigit)]
+        [InlineData(false, ContextLevel.Column, Identifier_ContainsHyphen)]
+        [InlineData(false, ContextLevel.Column, Identifier_Invalid_ContainsSpace)]
+        [InlineData(false, ContextLevel.Column, Identifier_ContainsDot)]
+        [InlineData(false, ContextLevel.Column, Identifier_Invalid_ContainsComma)]
+        [InlineData(false, ContextLevel.Column, Identifier_Invalid_ContainsParentheses)]
+        [InlineData(false, ContextLevel.Column, Identifier_Invalid_ContainsBracket)]
+        [InlineData(false, ContextLevel.Column, Identifier_Invalid_ContainsNewLine)]
+        [InlineData(false, ContextLevel.Column, Identifier_Invalid_ContainsTab)]
+        [InlineData(false, ContextLevel.Column, Identifier_Invalid_LongerThan128Chars)]
         // Negative test cases: Database (same rules as for columns)
         [InlineData(false, ContextLevel.Database, null)]
-        [InlineData(false, ContextLevel.Database, TestSamples.Identifier_Invalid_Empty)]
-        [InlineData(false, ContextLevel.Database, TestSamples.Identifier_Invalid_WhiteSpaceOnly)]
-        [InlineData(false, ContextLevel.Database, TestSamples.Identifier_Invalid_StartsWithDigit)]
-        [InlineData(false, ContextLevel.Database, TestSamples.Identifier_ContainsHyphen)]
-        [InlineData(false, ContextLevel.Database, TestSamples.Identifier_Invalid_ContainsSpace)]
-        [InlineData(false, ContextLevel.Database, TestSamples.Identifier_ContainsDot)]
-        [InlineData(false, ContextLevel.Database, TestSamples.Identifier_Invalid_ContainsComma)]
-        [InlineData(false, ContextLevel.Database, TestSamples.Identifier_Invalid_ContainsParentheses)]
-        [InlineData(false, ContextLevel.Database, TestSamples.Identifier_Invalid_ContainsBracket)]
-        [InlineData(false, ContextLevel.Database, TestSamples.Identifier_Invalid_ContainsNewLine)]
-        [InlineData(false, ContextLevel.Database, TestSamples.Identifier_Invalid_ContainsTab)]
-        [InlineData(false, ContextLevel.Database, TestSamples.Identifier_Invalid_LongerThan128Chars)]
+        [InlineData(false, ContextLevel.Database, Identifier_Invalid_Empty)]
+        [InlineData(false, ContextLevel.Database, Identifier_Invalid_WhiteSpaceOnly)]
+        [InlineData(false, ContextLevel.Database, Identifier_Invalid_StartsWithDigit)]
+        [InlineData(false, ContextLevel.Database, Identifier_ContainsHyphen)]
+        [InlineData(false, ContextLevel.Database, Identifier_Invalid_ContainsSpace)]
+        [InlineData(false, ContextLevel.Database, Identifier_ContainsDot)]
+        [InlineData(false, ContextLevel.Database, Identifier_Invalid_ContainsComma)]
+        [InlineData(false, ContextLevel.Database, Identifier_Invalid_ContainsParentheses)]
+        [InlineData(false, ContextLevel.Database, Identifier_Invalid_ContainsBracket)]
+        [InlineData(false, ContextLevel.Database, Identifier_Invalid_ContainsNewLine)]
+        [InlineData(false, ContextLevel.Database, Identifier_Invalid_ContainsTab)]
+        [InlineData(false, ContextLevel.Database, Identifier_Invalid_LongerThan128Chars)]
         // Negative test cases: Table (same rules as for columns)
         [InlineData(false, ContextLevel.Table, null, null)]
-        [InlineData(false, ContextLevel.Table, null, TestSamples.Identifier_Valid_Digits)]
-        [InlineData(false, ContextLevel.Table, TestSamples.Identifier_Invalid_Empty, TestSamples.Identifier_Valid_Digits)]
-        [InlineData(false, ContextLevel.Table, TestSamples.Identifier_Valid, TestSamples.Identifier_Invalid_WhiteSpaceOnly)]
-        [InlineData(false, ContextLevel.Table, TestSamples.Identifier_Invalid_StartsWithDigit, TestSamples.Identifier_Valid)]
-        [InlineData(false, ContextLevel.Table, TestSamples.Identifier_Valid, TestSamples.Identifier_ContainsHyphen)]
-        [InlineData(false, ContextLevel.Table, TestSamples.Identifier_Invalid_ContainsSpace, TestSamples.Identifier_Valid)]
-        [InlineData(false, ContextLevel.Table, TestSamples.Identifier_Valid, TestSamples.Identifier_ContainsDot)]
-        [InlineData(false, ContextLevel.Table, TestSamples.Identifier_Invalid_ContainsComma, TestSamples.Identifier_Valid)]
-        [InlineData(false, ContextLevel.Table, TestSamples.Identifier_Valid, TestSamples.Identifier_Invalid_ContainsParentheses)]
-        [InlineData(false, ContextLevel.Table, TestSamples.Identifier_Invalid_ContainsBracket, TestSamples.Identifier_Valid)]
-        [InlineData(false, ContextLevel.Table, TestSamples.Identifier_Valid, TestSamples.Identifier_Invalid_ContainsNewLine)]
-        [InlineData(false, ContextLevel.Table, TestSamples.Identifier_Invalid_ContainsTab, TestSamples.Identifier_Valid)]
-        [InlineData(false, ContextLevel.Table, TestSamples.Identifier_Valid, TestSamples.Identifier_Invalid_LongerThan128Chars)]
-        [InlineData(false, ContextLevel.Table, TestSamples.Identifier_Invalid_LongerThan128Chars, TestSamples.Identifier_Invalid_LongerThan128Chars)]
-        [InlineData(false, ContextLevel.Table, TestSamples.Identifier_ContainsDot, TestSamples.Identifier_ContainsHyphen)]
+        [InlineData(false, ContextLevel.Table, null, Identifier_Valid_Digits)]
+        [InlineData(false, ContextLevel.Table, Identifier_Invalid_Empty, Identifier_Valid_Digits)]
+        [InlineData(false, ContextLevel.Table, Identifier_Valid, Identifier_Invalid_WhiteSpaceOnly)]
+        [InlineData(false, ContextLevel.Table, Identifier_Invalid_StartsWithDigit, Identifier_Valid)]
+        [InlineData(false, ContextLevel.Table, Identifier_Valid, Identifier_ContainsHyphen)]
+        [InlineData(false, ContextLevel.Table, Identifier_Invalid_ContainsSpace, Identifier_Valid)]
+        [InlineData(false, ContextLevel.Table, Identifier_Valid, Identifier_ContainsDot)]
+        [InlineData(false, ContextLevel.Table, Identifier_Invalid_ContainsComma, Identifier_Valid)]
+        [InlineData(false, ContextLevel.Table, Identifier_Valid, Identifier_Invalid_ContainsParentheses)]
+        [InlineData(false, ContextLevel.Table, Identifier_Invalid_ContainsBracket, Identifier_Valid)]
+        [InlineData(false, ContextLevel.Table, Identifier_Valid, Identifier_Invalid_ContainsNewLine)]
+        [InlineData(false, ContextLevel.Table, Identifier_Invalid_ContainsTab, Identifier_Valid)]
+        [InlineData(false, ContextLevel.Table, Identifier_Valid, Identifier_Invalid_LongerThan128Chars)]
+        [InlineData(false, ContextLevel.Table, Identifier_Invalid_LongerThan128Chars, Identifier_Invalid_LongerThan128Chars)]
+        [InlineData(false, ContextLevel.Table, Identifier_ContainsDot, Identifier_ContainsHyphen)]
         // Negative test cases: Server (dot and hyphen are allowed in server name)
         [InlineData(false, ContextLevel.Server, null)]
-        [InlineData(false, ContextLevel.Server, TestSamples.Identifier_Invalid_Empty)]
-        [InlineData(false, ContextLevel.Server, TestSamples.Identifier_Invalid_WhiteSpaceOnly)]
-        [InlineData(false, ContextLevel.Server, TestSamples.Identifier_Invalid_StartsWithDigit)]
-        [InlineData(false, ContextLevel.Server, TestSamples.Identifier_Invalid_ContainsSpace)]
-        [InlineData(false, ContextLevel.Server, TestSamples.Identifier_Invalid_ContainsComma)]
-        [InlineData(false, ContextLevel.Server, TestSamples.Identifier_Invalid_ContainsParentheses)]
-        [InlineData(false, ContextLevel.Server, TestSamples.Identifier_Invalid_ContainsBracket)]
-        [InlineData(false, ContextLevel.Server, TestSamples.Identifier_Invalid_ContainsNewLine)]
-        [InlineData(false, ContextLevel.Server, TestSamples.Identifier_Invalid_ContainsTab)]
-        [InlineData(false, ContextLevel.Server, TestSamples.Identifier_Invalid_LongerThan128Chars)]
+        [InlineData(false, ContextLevel.Server, Identifier_Invalid_Empty)]
+        [InlineData(false, ContextLevel.Server, Identifier_Invalid_WhiteSpaceOnly)]
+        [InlineData(false, ContextLevel.Server, Identifier_Invalid_StartsWithDigit)]
+        [InlineData(false, ContextLevel.Server, Identifier_Invalid_ContainsSpace)]
+        [InlineData(false, ContextLevel.Server, Identifier_Invalid_ContainsComma)]
+        [InlineData(false, ContextLevel.Server, Identifier_Invalid_ContainsParentheses)]
+        [InlineData(false, ContextLevel.Server, Identifier_Invalid_ContainsBracket)]
+        [InlineData(false, ContextLevel.Server, Identifier_Invalid_ContainsNewLine)]
+        [InlineData(false, ContextLevel.Server, Identifier_Invalid_ContainsTab)]
+        [InlineData(false, ContextLevel.Server, Identifier_Invalid_LongerThan128Chars)]
         #endregion
         // Positive & negative test cases with different values/identifiers (name, scheam) passed in the sections
         internal void Section_Identify_Test(bool shouldIdentify, ContextLevel sectionType, string? name, string? schema = null)
@@ -108,18 +109,18 @@ namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
         [InlineData("")]
         [InlineData(" \t\v\r\n")]
         // Unknown section type
-        [InlineData(TestSamples.Section_Invalid_Type_NotKnown)]
+        [InlineData(Section_Invalid_Type_NotKnown)]
         // Properties section is not surrounded by []
-        [InlineData(TestSamples.Section_Invalid_BadSyntax_PropertiesSection_ParenthesesInsteadBrackets)]
+        [InlineData(Section_Invalid_BadSyntax_PropertiesSection_ParenthesesInsteadBrackets)]
         // Property name not known
-        [InlineData(TestSamples.Section_Invalid_Property_NotKnown)]
+        [InlineData(Section_Invalid_Property_NotKnown)]
         // Property name not starting with '@'
-        [InlineData(TestSamples.Section_Invalid_BadSyntax_MissingAt)]
+        [InlineData(Section_Invalid_BadSyntax_MissingAt)]
         // Property value not surrounded by quotes
-        [InlineData(TestSamples.Section_Invalid_BadSyntax_MissingQuotes)]
+        [InlineData(Section_Invalid_BadSyntax_MissingQuotes)]
         // Property name-value separator is not '='
-        [InlineData(TestSamples.Section_Invalid_BadSyntax_MissingEqualSign)]
-        [InlineData(TestSamples.Section_Invalid_BadSyntax_ColonInsteadEqualSign)]
+        [InlineData(Section_Invalid_BadSyntax_MissingEqualSign)]
+        [InlineData(Section_Invalid_BadSyntax_ColonInsteadEqualSign)]
         #endregion
         // Negative test cases for the overall syntax of a single segment
         internal void Section_WithBadSyntax_Identify_Test(string? sectionWithBadSyntax)
@@ -199,6 +200,185 @@ namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
             Assert.Equal(shouldBeValid, isValid);
         }
 
+        [Theory]
+        #region TestCases
+        // Applicable contexts
+        [InlineData(true, NavContext_StringFull_ContextLevel_Column, Constants.Column_Context)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Column, Constants.Table_Context)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Column, Constants.Database_Context)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Column, Constants.Server_Context)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Table, Constants.Column_Context)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Table, Constants.Table_Context)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Table, Constants.Database_Context)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Table, Constants.Server_Context)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Database, Constants.Column_Context)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Database, Constants.Table_Context)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Database, Constants.Database_Context)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Database, Constants.Server_Context)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Server, Constants.Column_Context)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Server, Constants.Table_Context)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Server, Constants.Database_Context)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Server, Constants.Server_Context)]
+        // Not applicable contexts
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/DatabasesFolder")]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/Database/UserTablesFolder")]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/Database/View")]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/Database/StoredProcedure")]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/Database/StoredProceduresFolder")]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/JobServer")]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/JobServer/JobsFolder")]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/JobServer/Job")]
+        // Strings denominate no context kind
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "JustARandomStringNoContext")]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Database/View")]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "StoredProceduresFolder")]
+        #endregion
+        // Testing if a valid navigation context string with a specific context level is accepted as a filter for a menu item with a specific context level
+        internal void ValidateForContext_Test(bool shouldBeValid, string navigationContext, string menuItemContextLevel)
+        {
+            // Act & assert
+            var validationResult = ExtendedFilteringProperties.ValidateForContext(navigationContext, menuItemContextLevel);
+
+            // TODO: in case the error messages will be extracted into string constants, we could try assert also the message in the exception to be more accurate!
+            // TODO: check on the returned error as well!
+            Assert.Equal(shouldBeValid, validationResult.IsValid);
+        }
+
+        // TODO: null/empty/whitespace for ValidateForContext - in a separate case (also modify the original method)!
+
+        [Theory]
+        #region TestCases
+        // Context: Server
+        [InlineData(NavContext_Server_Segment, ContextLevel.Server)]
+        // Context: Database
+        [InlineData(NavContext_Database_Segment, ContextLevel.Database)]
+        [InlineData($"{NavContext_Server_Segment}/{NavContext_Database_Segment}", ContextLevel.Database)]
+        // Context: Table
+        [InlineData(NavContext_Table_Segment, ContextLevel.Table)]
+        // Context: Table, with 2 segments
+        [InlineData($"{NavContext_Database_Segment}/{NavContext_Table_Segment}", ContextLevel.Table)]
+        [InlineData($"{NavContext_Server_Segment}/{NavContext_Table_Segment}", ContextLevel.Table)]
+        [InlineData($"{NavContext_Server_Segment}/{NavContext_Database_Segment}/{NavContext_Table_Segment}", ContextLevel.Table)]
+        // Context: Column
+        [InlineData(NavContext_Column_Segment, ContextLevel.Column)]
+        // Context: Column, with 2 segments
+        [InlineData($"{NavContext_Table_Segment}/{NavContext_Column_Segment}", ContextLevel.Column)]
+        [InlineData($"{NavContext_Database_Segment}/{NavContext_Column_Segment}", ContextLevel.Column)]
+        [InlineData($"{NavContext_Server_Segment}/{NavContext_Column_Segment}", ContextLevel.Column)]
+        // Context: Column, with 3 segments
+        [InlineData($"{NavContext_Server_Segment}/{NavContext_Database_Segment}/{NavContext_Column_Segment}", ContextLevel.Column)]
+        [InlineData($"{NavContext_Server_Segment}/{NavContext_Table_Segment}/{NavContext_Column_Segment}", ContextLevel.Column)]
+        [InlineData($"{NavContext_Database_Segment}/{NavContext_Table_Segment}/{NavContext_Column_Segment}", ContextLevel.Column)]
+        // Context: Column, 4 segments
+        [InlineData($"{NavContext_Server_Segment}/{NavContext_Database_Segment}/{NavContext_Table_Segment}/{NavContext_Column_Segment}", ContextLevel.Column)]
+        #endregion
+        internal void BuildFromNavigationContext_NotEmptyFilters_Test(string navigationContext, ContextLevel context)
+        {
+            var filter = ExtendedFilteringProperties.BuildFromNavigationContext(navigationContext);
+            switch (context)
+            {
+                case ContextLevel.Column:
+                    Assert.Multiple(
+                        () => Assert.False(filter.IsEmpty),
+                        () => Assert.True(filter.Context is ContextLevel.Column),
+                        () => Assert.True(filter.Column.IsActiveFilter),
+                        () => Assert.NotNull(filter.Table),
+                        () => Assert.NotNull(filter.Database),
+                        () => Assert.NotNull(filter.Server));
+                    break;
+                case ContextLevel.Table:
+                    Assert.Multiple(
+                        () => Assert.False(filter.IsEmpty),
+                        () => Assert.True(filter.Context is ContextLevel.Table),
+                        () => Assert.Null(filter.Column),
+                        () => Assert.True(filter.Table.IsActiveFilter),
+                        () => Assert.NotNull(filter.Database),
+                        () => Assert.NotNull(filter.Server));
+                    break;
+                case ContextLevel.Database:
+                    Assert.Multiple(
+                        () => Assert.False(filter.IsEmpty),
+                        () => Assert.True(filter.Context is ContextLevel.Database),
+                        () => Assert.Null(filter.Column),
+                        () => Assert.Null(filter.Table),
+                        () => Assert.True(filter.Database.IsActiveFilter),
+                        () => Assert.NotNull(filter.Server));
+                    break;
+                case ContextLevel.Server:
+                    Assert.Multiple(
+                        () => Assert.False(filter.IsEmpty),
+                        () => Assert.True(filter.Context is ContextLevel.Server),
+                        () => Assert.Null(filter.Column),
+                        () => Assert.Null(filter.Table),
+                        () => Assert.Null(filter.Database),
+                        () => Assert.True(filter.Server.IsActiveFilter));
+                    break;
+                default:
+                    Assert.Fail($"Implementation missisng for context type: {context}.");
+                    break;
+            }
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("\t\v\r\n")]
+        [InlineData(NavContext_AnySegment_Column)]
+        [InlineData(NavContext_AnySegment_Table)]
+        [InlineData(NavContext_AnySegment_Database)]
+        [InlineData(NavContext_AnySegment_Server)]
+        [InlineData($"{NavContext_AnySegment_Table}/{NavContext_AnySegment_Column}")]
+        [InlineData($"{NavContext_AnySegment_Database}/{NavContext_AnySegment_Table}")]
+        [InlineData($"{NavContext_AnySegment_Server}/{NavContext_AnySegment_Database}")]
+        [InlineData($"{NavContext_AnySegment_Server}/{NavContext_AnySegment_Database}/{NavContext_AnySegment_Table}/{NavContext_AnySegment_Column}")]
+        internal void BuildFromNavigationContext_EmptyFilters_Test(string? navigationContext)
+        {
+            var filter = ExtendedFilteringProperties.BuildFromNavigationContext(navigationContext);
+
+            Assert.True(filter.IsEmpty);
+            Assert.Null(filter.Context);
+        }
+
+        [Theory]
+        // null/empty/whitespace-only filters
+        [InlineData(true, null)]
+        [InlineData(true, "")]
+        [InlineData(true, "\t\r\n\v")]
+        // Sinlge "Any" segments: they're not filtering (like we haven't defined anything)
+        [InlineData(true, $"{NavContext_AnySegment_Column}")]
+        [InlineData(true, $"{NavContext_AnySegment_Database}")]
+        // Combining filtering Column segment with "Any" segment(s)
+        [InlineData(true, $"{NavContext_AnySegment_Database}/{NavContext_Column_Segment}")]
+        [InlineData(true, $"{NavContext_AnySegment_Server}/{NavContext_AnySegment_Table}/{NavContext_Column_Segment}")]
+        // Full filter matching
+        [InlineData(true, NavContext_StringFull_ContextLevel_Column)]
+        // Examples for case-insensitive match
+        [InlineData(true, $"{NavContext_Server_Segment}/{NavContext_Database_Segment}/{NavContext_Table_Segment}/Column[@Name='PRICE']")]
+        [InlineData(true, $"{NavContext_Server_Segment}/{NavContext_Database_Segment}/Table[@Name='SALES' and @Schema='dbo']/{NavContext_Column_Segment}")]
+        [InlineData(true, $"{NavContext_Server_Segment}/Database[@Name='mycompany']/{NavContext_Table_Segment}/{NavContext_Column_Segment}")]
+        [InlineData(true, $"Server[@Name='LOCALHOST']/{NavContext_Database_Segment}/{NavContext_Table_Segment}/{NavContext_Column_Segment}")]
+        // Tables: wildcarding only the schema or the name
+        [InlineData(true, $"{NavContext_Server_Segment}/{NavContext_Database_Segment}/Table[@Name='*' and @Schema='{NavContext_SchemaName}']/{NavContext_Column_Segment}")]
+        [InlineData(true, $"{NavContext_Server_Segment}/{NavContext_Database_Segment}/Table[@Name='{NavContext_TableName}' and @Schema='*']/{NavContext_Column_Segment}")]
+        // Filtering fails
+        [InlineData(false, $"{NavContext_Server_Segment}/{NavContext_Database_Segment}/{NavContext_Table_Segment}/Column[@Name='WontMatch']")] // Column does not match
+        [InlineData(false, $"{NavContext_Server_Segment}/{NavContext_Database_Segment}/Table[@Name='{NavContext_TableName}' and @Schema='WontMatch']/{NavContext_Column_Segment}")] // Table schema does not match
+        [InlineData(false, $"{NavContext_Server_Segment}/{NavContext_Database_Segment}/Table[@Name='WontMatch' and @Schema='{NavContext_SchemaName}']/{NavContext_Column_Segment}")] // Table name does not match
+        [InlineData(false, $"{NavContext_Server_Segment}/{NavContext_Database_Segment}/Table[@Name='WontMatch' and @Schema='WontMatch']/{NavContext_Column_Segment}")] // Table does not match
+        [InlineData(false, $"{NavContext_Server_Segment}/Database[@Name='WontMatch']/{NavContext_Table_Segment}/{NavContext_Column_Segment}")] // Database does not match
+        [InlineData(false, $"Server[@Name='WontMatch']/{NavContext_Database_Segment}/{NavContext_Table_Segment}/{NavContext_Column_Segment}")] // Server does not match
+        internal void ApplyFiltering_Test(bool isAllowedByFilter, string? strFilter)
+        {
+            // Arrange
+            // Node representing a column in the SSMS Object Explorer Tree
+            var node = ExtendedFilteringProperties.BuildFromNavigationContext(NavContext_StringFull_ContextLevel_Column);
+            // Filter associated to a MenuItem
+            var filter = ExtendedFilteringProperties.BuildFromNavigationContext(strFilter);
+
+            // Assert
+            Assert.Equal(isAllowedByFilter, node.ApplyFiltering(filter));
+        }
+
         private static bool AreEqual<TSection>(Func<string, TSection> createSection, string name1, string name2) where TSection : NameProperty
             => createSection(name1) == createSection(name2);
 
@@ -223,4 +403,20 @@ namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
             };
         }
     }
+
+    //[Flags]
+    //internal enum NavContextStringSegment
+    //{
+    //    None = 0,
+    //    Column = 1,
+    //    Table = 2,
+    //    Database = 4,
+    //    Server = 8,
+    //    All = Column | Table | Database | Server
+    //}
+
+    //internal static class UsingSegmentsExtensions
+    //{
+    //    internal static bool Contains(this NavContextStringSegment segments, NavContextStringSegment segmentToFind) => (segments & segmentToFind) == segmentToFind;
+    //}
 }
