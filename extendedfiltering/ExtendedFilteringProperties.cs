@@ -94,6 +94,9 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
                 return (false, $"Invalid additional filter: {ex.Message}");
             }
 
+            // TODO: make the validation of navContext string's contextlevel vs. menuItem contextlevel here!
+            // Delete the check from BuildFromNavigationContext
+
             return (true, null);
         }
 
@@ -106,7 +109,7 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
         /// <returns></returns>
         internal static ExtendedFilteringProperties BuildFromNavigationContext(string navigationContext, ContextLevel? buildingForLevel = null)
         {
-            var navContextSections = navigationContext.Split(['/'], StringSplitOptions.RemoveEmptyEntries);
+            var navContextSections = navigationContext.Split(['/'], StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim());
 
             var parsedSections = navContextSections.Select(IdentifySection).ToArray();
             if (parsedSections.Any(s => !s.IsIdentified))
