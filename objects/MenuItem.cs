@@ -81,7 +81,7 @@ namespace SSMSObjectExplorerMenu.objects
 			Confirm = confirm;
             AdditionalFilter = additionalFilter;
 
-            foreach (var param in userDefinedParams ?? Enumerable.Empty<UserDefinedParameter>())
+            foreach (var param in userDefinedParams ?? [])
             {
                 UserDefinedParameters.Add(param);
             }
@@ -99,9 +99,12 @@ namespace SSMSObjectExplorerMenu.objects
 					? null : new MenuItemErrorModel { MenuItemName = Name, ErrorMessages = paramErrors })
 				.Where(e => e != null);
 
-			var additionalFilter = ExtendedFilteringProperties.ValidateForContext(Context, AdditionalFilter);
-			if(!additionalFilter.IsValid)
-				validationErrors = validationErrors.Append(new MenuItemErrorModel { MenuItemName = Name, ErrorMessages = [additionalFilter.Error] });
+			var additionalFilter = ExtendedFilteringProperties.BuildFromNavigationContext(AdditionalFilter, out var filterBuildErrors);
+
+            if (additionalFilter != null && !additionalFilter.TryValidateForContext(Context, out var contextErrors))
+                validationErrors = validationErrors.Append(new MenuItemErrorModel { MenuItemName = Name, ErrorMessages = [.. contextErrors] });
+            else if (additionalFilter == null)
+                validationErrors = validationErrors.Append(new MenuItemErrorModel { MenuItemName = Name, ErrorMessages = [.. filterBuildErrors] });
 
             return !validationErrors.Any();
         }

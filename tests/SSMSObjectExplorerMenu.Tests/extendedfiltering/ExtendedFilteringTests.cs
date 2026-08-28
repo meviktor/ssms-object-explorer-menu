@@ -1,5 +1,6 @@
 ﻿using SSMSObjectExplorerMenu.extendedfiltering;
 using SSMSObjectExplorerMenu.extendedfiltering.PropertyTypes;
+using static SSMSObjectExplorerMenu.Constants;
 using static SSMSObjectExplorerMenu.Tests.extendedfiltering.TestSamples;
 
 namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
@@ -45,7 +46,6 @@ namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
         [InlineData(false, ContextLevel.Column, Identifier_Invalid_ContainsBracket)]
         [InlineData(false, ContextLevel.Column, Identifier_Invalid_ContainsNewLine)]
         [InlineData(false, ContextLevel.Column, Identifier_Invalid_ContainsTab)]
-        [InlineData(false, ContextLevel.Column, Identifier_Invalid_LongerThan128Chars)]
         // Negative test cases: Database (same rules as for columns)
         [InlineData(false, ContextLevel.Database, null)]
         [InlineData(false, ContextLevel.Database, Identifier_Invalid_Empty)]
@@ -59,7 +59,6 @@ namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
         [InlineData(false, ContextLevel.Database, Identifier_Invalid_ContainsBracket)]
         [InlineData(false, ContextLevel.Database, Identifier_Invalid_ContainsNewLine)]
         [InlineData(false, ContextLevel.Database, Identifier_Invalid_ContainsTab)]
-        [InlineData(false, ContextLevel.Database, Identifier_Invalid_LongerThan128Chars)]
         // Negative test cases: Table (same rules as for columns)
         [InlineData(false, ContextLevel.Table, null, null)]
         [InlineData(false, ContextLevel.Table, null, Identifier_Valid_Digits)]
@@ -74,8 +73,6 @@ namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
         [InlineData(false, ContextLevel.Table, Identifier_Invalid_ContainsBracket, Identifier_Valid)]
         [InlineData(false, ContextLevel.Table, Identifier_Valid, Identifier_Invalid_ContainsNewLine)]
         [InlineData(false, ContextLevel.Table, Identifier_Invalid_ContainsTab, Identifier_Valid)]
-        [InlineData(false, ContextLevel.Table, Identifier_Valid, Identifier_Invalid_LongerThan128Chars)]
-        [InlineData(false, ContextLevel.Table, Identifier_Invalid_LongerThan128Chars, Identifier_Invalid_LongerThan128Chars)]
         [InlineData(false, ContextLevel.Table, Identifier_ContainsDot, Identifier_ContainsHyphen)]
         // Negative test cases: Server (dot and hyphen are allowed in server name)
         [InlineData(false, ContextLevel.Server, null)]
@@ -88,26 +85,23 @@ namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
         [InlineData(false, ContextLevel.Server, Identifier_Invalid_ContainsBracket)]
         [InlineData(false, ContextLevel.Server, Identifier_Invalid_ContainsNewLine)]
         [InlineData(false, ContextLevel.Server, Identifier_Invalid_ContainsTab)]
-        [InlineData(false, ContextLevel.Server, Identifier_Invalid_LongerThan128Chars)]
         #endregion
         // Positive & negative test cases with different values/identifiers (name, scheam) passed in the sections
         internal void Section_Identify_Test(bool shouldIdentify, ContextLevel sectionType, string? name, string? schema = null)
-        {
-            // Arrange
-            var section = GenerateSection(sectionType, name, schema);
-            var action = () => ExtendedFilteringProperties.BuildFromNavigationContext(section);
-            // Act & assert
-            var isIdentified = Record.Exception(action) is null;
-            // TODO: in case the error messages will be extracted into string constants, we could try assert also the message in the exception to be more accurate!
-            Assert.Equal(shouldIdentify, isIdentified);
-        }
+            => Section_Identify_Test_Core(shouldIdentify, ERROR_BUILD_FILTER_UNKNOWN_SECTION, sectionType, name, schema);
+
+        [Theory]
+        [InlineData(ContextLevel.Column, Identifier_Invalid_LongerThan128Chars)]
+        [InlineData(ContextLevel.Database, Identifier_Invalid_LongerThan128Chars)]
+        [InlineData(ContextLevel.Table, Identifier_Valid, Identifier_Invalid_LongerThan128Chars)]
+        [InlineData(ContextLevel.Table, Identifier_Invalid_LongerThan128Chars, Identifier_Invalid_LongerThan128Chars)]
+        [InlineData(ContextLevel.Server, Identifier_Invalid_LongerThan128Chars)]
+        // Section_Identify_Test, specific cases of too long identifiers (> 128 chars)
+        internal void Section_Identify_Test_IdentifierTooLong(ContextLevel sectionType, string? name, string? schema = null)
+             => Section_Identify_Test_Core(false, ERROR_BUILD_FILTER_SERVER_NAME_TOO_LONG, sectionType, name, schema);
 
         [Theory]
         #region TestCases
-        // Section is null/empty/whitespace-only
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData(" \t\v\r\n")]
         // Unknown section type
         [InlineData(Section_Invalid_Type_NotKnown)]
         // Properties section is not surrounded by []
@@ -125,11 +119,11 @@ namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
         // Negative test cases for the overall syntax of a single segment
         internal void Section_WithBadSyntax_Identify_Test(string? sectionWithBadSyntax)
         {
-            // Arrange
-            var action = () => ExtendedFilteringProperties.BuildFromNavigationContext(sectionWithBadSyntax);
             // Act & assert
-            // TODO: in case the error messages will be extracted into string constants, we could try assert also the message in the exception to be more accurate!
-            Assert.Throws<ArgumentException>(action);
+            var buildResult = ExtendedFilteringProperties.BuildFromNavigationContext(sectionWithBadSyntax, out var errors);
+
+            Assert.Null(buildResult);
+            Assert.Contains(ERROR_BUILD_FILTER_UNKNOWN_SECTION, errors);
         }
 
         [Theory]
@@ -161,90 +155,84 @@ namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
         [InlineData(false, "localhost", "127.0.0.1")]
         internal void Section_Server_Equality_Test(bool areEqual, string name1, string name2) => Assert.Equal(areEqual, AreEqual((name) => new Server(name), name1, name2));
 
+        // TODO: check if we could exchange the the baked in strings with constants from the TestSamples class!
         [Theory]
         #region TestCases
-        // Negative: string is null/empty/whitespace-only
-        [InlineData(false, null)]
-        [InlineData(false, "")]
-        [InlineData(false, "\t\v\r\n")]
         // Negative: sections are separating with anything but forward slash
-        [InlineData(false, "Server[@Name='localhost'] Database[@Name='BusinessResults']")]
-        [InlineData(false, "Server[@Name='localhost']\\Database[@Name='BusinessResults']")]
-        [InlineData(false, "Server[@Name='localhost'];Database[@Name='BusinessResults']")]
+        [InlineData(false, ERROR_BUILD_FILTER_UNKNOWN_SECTION, $"{NavContext_Server_Segment} {NavContext_Database_Segment}")]
+        [InlineData(false, ERROR_BUILD_FILTER_UNKNOWN_SECTION, $"{NavContext_Server_Segment}\\{NavContext_Database_Segment}")]
+        [InlineData(false, ERROR_BUILD_FILTER_UNKNOWN_SECTION, $"{NavContext_Server_Segment};{NavContext_Database_Segment}")]
         // Negative: sections ordering are invalid
-        [InlineData(false, "Database[@Name='BusinessResults']/Server[@Name='localhost']")]
-        [InlineData(false, "Column[@Name='id']/Server[@Name='localhost']")]
-        [InlineData(false, "Table[@Name='Sales' and @Schema='FirstCompany']/Database[@Name='BusinessResults']")]
+        [InlineData(false, ERROR_BUILD_FILTER_INVALID_SECTION_ORDER, $"{NavContext_Database_Segment}/{NavContext_Server_Segment}")]
+        [InlineData(false, ERROR_BUILD_FILTER_INVALID_SECTION_ORDER, $"{NavContext_Column_Segment}/{NavContext_Server_Segment}")]
+        [InlineData(false, ERROR_BUILD_FILTER_INVALID_SECTION_ORDER, $"{NavContext_Table_Segment}/{NavContext_Database_Segment}")]
         // Negative: duplicated sections
-        [InlineData(false, "Server[@Name='localhost']/Database[@Name='BusinessResults']/Database[@Name='Statistics']")]
-        [InlineData(false, "Server[@Name='localhost']/Server[@Name='127.0.0.1']/Database[@Name='Statistics']")]
-        [InlineData(false, "Server[@Name='localhost']/Column[@Name='Id']/Column[@Name='FirstName']")]
-        [InlineData(false, "Database[@Name='BusinessResults']/Table[@Name='Sales' and @Schema='FirstCompany']/Table[@Name='*' and @Schema='*']")]
+        [InlineData(false, ERROR_BUILD_FILTER_DUPLICATED_SECTION, $"{NavContext_Server_Segment}/{NavContext_Database_Segment}/Database[@Name='OtherDatabase']")]
+        [InlineData(false, ERROR_BUILD_FILTER_DUPLICATED_SECTION, $"{NavContext_Server_Segment}/Server[@Name='OtherServer']/{NavContext_Database_Segment}")]
+        [InlineData(false, ERROR_BUILD_FILTER_DUPLICATED_SECTION, $"{NavContext_Server_Segment}/{NavContext_Column_Segment}/Column[@Name='OtherColumn']")]
+        [InlineData(false, ERROR_BUILD_FILTER_DUPLICATED_SECTION, $"{NavContext_Database_Segment}/{NavContext_Table_Segment}/Table[@Name='*' and @Schema='*']")]
+        // Positive: string is null/empty/whitespace-only - no errors, an empty, "dummy" filter is returned
+        [InlineData(true, null, null)]
+        [InlineData(true, null, "")]
+        [InlineData(true, null, "\t\v\r\n")]
         // Positive: string with all sections, omitting sections but the ordering is still right
-        [InlineData(true, "Server[@Name='localhost']/Database[@Name='BusinessResults']/Table[@Name='Sales' and @Schema='FirstCompany']/Column[@Name='id']")]
-        [InlineData(true, "Database[@Name='BusinessResults']/Table[@Name='Sales' and @Schema='FirstCompany']/Column[@Name='id']")]
-        [InlineData(true, "Server[@Name='localhost']/Table[@Name='Sales' and @Schema='FirstCompany']/Column[@Name='id']")]
-        [InlineData(true, "Server[@Name='localhost']/Database[@Name='BusinessResults']/Column[@Name='Amount']")]
-        [InlineData(true, "Server[@Name='localhost']/Database[@Name='BusinessResults']/Table[@Name='Sales' and @Schema='FirstCompany']")]
+        [InlineData(true, null, $"{NavContext_Server_Segment}/{NavContext_Database_Segment}/{NavContext_Table_Segment}/{NavContext_Column_Segment}")]
+        [InlineData(true, null, $"{NavContext_Database_Segment}/{NavContext_Table_Segment}/{NavContext_Column_Segment}")]
+        [InlineData(true, null, $"{NavContext_Server_Segment}/{NavContext_Table_Segment}/{NavContext_Column_Segment}")]
+        [InlineData(true, null, $"{NavContext_Server_Segment}/{NavContext_Database_Segment}/{NavContext_Column_Segment}")]
+        [InlineData(true, null, $"{NavContext_Server_Segment}/{NavContext_Database_Segment}/{NavContext_Table_Segment}")]
         // Positive: "empty sections" (creating accidentally by placing double forward slashes or starting with a forward slash) will not cause an error (they are ignored)
-        [InlineData(true, "Database[@Name='BusinessResults']//Table[@Name='Sales' and @Schema='FirstCompany']/Column[@Name='id']")]
-        [InlineData(true, "/Database[@Name='BusinessResults']/Column[@Name='SoldQty']")]
+        [InlineData(true, null, $"{NavContext_Database_Segment}//{NavContext_Table_Segment}/{NavContext_Column_Segment}")]
+        [InlineData(true, null, $"/{NavContext_Database_Segment}/{NavContext_Column_Segment}")]
         #endregion
         // Test cases of whole filter/navigation context strings, not only single sections
-        internal void NavigationContextString_Validation_Test(bool shouldBeValid, string? navigationContext)
-        {
-            var action = () => ExtendedFilteringProperties.BuildFromNavigationContext(navigationContext);
-            // Act & assert
-            var isValid = Record.Exception(action) is null;
-            // TODO: in case the error messages will be extracted into string constants, we could try assert also the message in the exception to be more accurate!
-            Assert.Equal(shouldBeValid, isValid);
-        }
+        internal void NavigationContextString_Validation_Test(bool shouldBeValid, string? expectedError, string? navigationContext)
+            => Build_Filter_Test(shouldBeValid, expectedError, navigationContext);
 
         [Theory]
         #region TestCases
         // Applicable contexts
-        [InlineData(true, NavContext_StringFull_ContextLevel_Column, Constants.Column_Context)]
-        [InlineData(false, NavContext_StringFull_ContextLevel_Column, Constants.Table_Context)]
-        [InlineData(false, NavContext_StringFull_ContextLevel_Column, Constants.Database_Context)]
-        [InlineData(false, NavContext_StringFull_ContextLevel_Column, Constants.Server_Context)]
-        [InlineData(true, NavContext_StringFull_ContextLevel_Table, Constants.Column_Context)]
-        [InlineData(true, NavContext_StringFull_ContextLevel_Table, Constants.Table_Context)]
-        [InlineData(false, NavContext_StringFull_ContextLevel_Table, Constants.Database_Context)]
-        [InlineData(false, NavContext_StringFull_ContextLevel_Table, Constants.Server_Context)]
-        [InlineData(true, NavContext_StringFull_ContextLevel_Database, Constants.Column_Context)]
-        [InlineData(true, NavContext_StringFull_ContextLevel_Database, Constants.Table_Context)]
-        [InlineData(true, NavContext_StringFull_ContextLevel_Database, Constants.Database_Context)]
-        [InlineData(false, NavContext_StringFull_ContextLevel_Database, Constants.Server_Context)]
-        [InlineData(true, NavContext_StringFull_ContextLevel_Server, Constants.Column_Context)]
-        [InlineData(true, NavContext_StringFull_ContextLevel_Server, Constants.Table_Context)]
-        [InlineData(true, NavContext_StringFull_ContextLevel_Server, Constants.Database_Context)]
-        [InlineData(true, NavContext_StringFull_ContextLevel_Server, Constants.Server_Context)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Column, Column_Context)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Column, Table_Context, ERROR_FILTER_VALIDATE_CONTEXT_FILTER_TARGETS_LOW_CONTEXT)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Column, Database_Context, ERROR_FILTER_VALIDATE_CONTEXT_FILTER_TARGETS_LOW_CONTEXT)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Column, Server_Context, ERROR_FILTER_VALIDATE_CONTEXT_FILTER_TARGETS_LOW_CONTEXT)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Table, Column_Context)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Table, Table_Context)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Table, Database_Context, ERROR_FILTER_VALIDATE_CONTEXT_FILTER_TARGETS_LOW_CONTEXT)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Table, Server_Context, ERROR_FILTER_VALIDATE_CONTEXT_FILTER_TARGETS_LOW_CONTEXT)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Database, Column_Context)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Database, Table_Context)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Database, Database_Context)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Database, Server_Context, ERROR_FILTER_VALIDATE_CONTEXT_FILTER_TARGETS_LOW_CONTEXT)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Server, Column_Context)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Server, Table_Context)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Server, Database_Context)]
+        [InlineData(true, NavContext_StringFull_ContextLevel_Server, Server_Context)]
         // Not applicable contexts
-        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/DatabasesFolder")]
-        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/Database/UserTablesFolder")]
-        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/Database/View")]
-        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/Database/StoredProcedure")]
-        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/Database/StoredProceduresFolder")]
-        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/JobServer")]
-        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/JobServer/JobsFolder")]
-        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/JobServer/Job")]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/DatabasesFolder", ERROR_FILTER_VALIDATE_CONTEXT_CONTEXT_NOT_APPLICABLE)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/Database/UserTablesFolder", ERROR_FILTER_VALIDATE_CONTEXT_CONTEXT_NOT_APPLICABLE)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/Database/View", ERROR_FILTER_VALIDATE_CONTEXT_CONTEXT_NOT_APPLICABLE)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/Database/StoredProcedure", ERROR_FILTER_VALIDATE_CONTEXT_CONTEXT_NOT_APPLICABLE)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/Database/StoredProceduresFolder", ERROR_FILTER_VALIDATE_CONTEXT_CONTEXT_NOT_APPLICABLE)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/JobServer", ERROR_FILTER_VALIDATE_CONTEXT_CONTEXT_NOT_APPLICABLE)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/JobServer/JobsFolder", ERROR_FILTER_VALIDATE_CONTEXT_CONTEXT_NOT_APPLICABLE)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Server/JobServer/Job", ERROR_FILTER_VALIDATE_CONTEXT_CONTEXT_NOT_APPLICABLE)]
         // Strings denominate no context kind
-        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "JustARandomStringNoContext")]
-        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Database/View")]
-        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "StoredProceduresFolder")]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "JustARandomStringNoContext", ERROR_FILTER_VALIDATE_CONTEXT_CONTEXT_NOT_APPLICABLE)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "Database/View", ERROR_FILTER_VALIDATE_CONTEXT_CONTEXT_NOT_APPLICABLE)]
+        [InlineData(false, NavContext_StringFull_ContextLevel_Server, "StoredProceduresFolder", ERROR_FILTER_VALIDATE_CONTEXT_CONTEXT_NOT_APPLICABLE)]
         #endregion
         // Testing if a valid navigation context string with a specific context level is accepted as a filter for a menu item with a specific context level
-        internal void ValidateForContext_Test(bool shouldBeValid, string navigationContext, string menuItemContextLevel)
+        internal void ValidateForContext_Test(bool shouldBeValid, string navigationContext, string targetContextLevel, string? expectedError = null)
         {
             // Act & assert
-            var validationResult = ExtendedFilteringProperties.ValidateForContext(navigationContext, menuItemContextLevel);
+            var filter = ExtendedFilteringProperties.BuildFromNavigationContext(navigationContext, out var _);
+            var isValidForContext = filter.TryValidateForContext(targetContextLevel, out var errors);
 
-            // TODO: in case the error messages will be extracted into string constants, we could try assert also the message in the exception to be more accurate!
-            // TODO: check on the returned error as well!
-            Assert.Equal(shouldBeValid, validationResult.IsValid);
+            Assert.Equal(shouldBeValid, isValidForContext);
+            if (!shouldBeValid)
+                Assert.Contains(expectedError, errors);
         }
-
-        // TODO: null/empty/whitespace for ValidateForContext - in a separate case (also modify the original method)!
 
         [Theory]
         #region TestCases
@@ -272,9 +260,13 @@ namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
         // Context: Column, 4 segments
         [InlineData($"{NavContext_Server_Segment}/{NavContext_Database_Segment}/{NavContext_Table_Segment}/{NavContext_Column_Segment}", ContextLevel.Column)]
         #endregion
+        // Building filters from valid navigation context strings and test if property values are set as expected
         internal void BuildFromNavigationContext_NotEmptyFilters_Test(string navigationContext, ContextLevel context)
         {
-            var filter = ExtendedFilteringProperties.BuildFromNavigationContext(navigationContext);
+            var filter = ExtendedFilteringProperties.BuildFromNavigationContext(navigationContext, out var _);
+
+            Assert.NotNull(filter);
+
             switch (context)
             {
                 case ContextLevel.Column:
@@ -331,9 +323,10 @@ namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
         [InlineData($"{NavContext_AnySegment_Database}/{NavContext_AnySegment_Table}")]
         [InlineData($"{NavContext_AnySegment_Server}/{NavContext_AnySegment_Database}")]
         [InlineData($"{NavContext_AnySegment_Server}/{NavContext_AnySegment_Database}/{NavContext_AnySegment_Table}/{NavContext_AnySegment_Column}")]
+        // Building filters from "Any"/empty navigation context strings and test if property values are set as expected
         internal void BuildFromNavigationContext_EmptyFilters_Test(string? navigationContext)
         {
-            var filter = ExtendedFilteringProperties.BuildFromNavigationContext(navigationContext);
+            var filter = ExtendedFilteringProperties.BuildFromNavigationContext(navigationContext, out var _);
 
             Assert.True(filter.IsEmpty);
             Assert.Null(filter.Context);
@@ -371,11 +364,12 @@ namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
         {
             // Arrange
             // Node representing a column in the SSMS Object Explorer Tree
-            var node = ExtendedFilteringProperties.BuildFromNavigationContext(NavContext_StringFull_ContextLevel_Column);
+            // Why column - filters with all target contexts can be used for columns
+            var node = ExtendedFilteringProperties.BuildFromNavigationContext(NavContext_StringFull_ContextLevel_Column, out var _);
             // Filter associated to a MenuItem
-            var filter = ExtendedFilteringProperties.BuildFromNavigationContext(strFilter);
+            var filter = ExtendedFilteringProperties.BuildFromNavigationContext(strFilter, out var _);
 
-            // Assert
+            // Action & Assert
             Assert.Equal(isAllowedByFilter, node.ApplyFiltering(filter));
         }
 
@@ -385,13 +379,28 @@ namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
         private static bool AreEqual<TSection>(Func<string, string, TSection> createSection, string schema1, string name1, string schema2, string name2) where TSection : NameSchemaProperties
             => createSection(schema1, name1) == createSection(schema2, name2);
 
+        private static void Section_Identify_Test_Core(bool shouldIdentify, string? expectedError, ContextLevel sectionType, string? name, string? schema = null)
+        {
+            // Arrange
+            var section = GenerateSection(sectionType, name, schema);
+            // Act & assert
+            Build_Filter_Test(shouldIdentify, expectedError, section);
+        }
+
+        private static void Build_Filter_Test(bool shouldIdentify, string? expectedError, string? filterString)
+        {
+            var filter = ExtendedFilteringProperties.BuildFromNavigationContext(filterString, out var errors);
+            var isIdentified = filter != null && !errors.Any();
+
+            Assert.Equal(shouldIdentify, isIdentified);
+            if (!shouldIdentify)
+                Assert.Contains(expectedError, errors);
+        }
+
         private static string GenerateSection(ContextLevel sectionType, string? name, string? schema = null)
         {
             if(sectionType != ContextLevel.Table && schema is not null)
                 throw new ArgumentException($"Schema is not applicable for context level '{sectionType}'.", nameof(schema));
-
-            //if (sectionType == ContextLevel.Table && schema is null)
-            //    throw new ArgumentException($"Schema must be provided for context level '{sectionType}'.", nameof(schema));
 
             return sectionType switch
             {
@@ -401,22 +410,6 @@ namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
                 ContextLevel.Column => $"Column[@Name='{name}']",
                 _ => throw new ArgumentException($"Unknown context level '{sectionType}'.", nameof(sectionType))
             };
-        }
+        } 
     }
-
-    //[Flags]
-    //internal enum NavContextStringSegment
-    //{
-    //    None = 0,
-    //    Column = 1,
-    //    Table = 2,
-    //    Database = 4,
-    //    Server = 8,
-    //    All = Column | Table | Database | Server
-    //}
-
-    //internal static class UsingSegmentsExtensions
-    //{
-    //    internal static bool Contains(this NavContextStringSegment segments, NavContextStringSegment segmentToFind) => (segments & segmentToFind) == segmentToFind;
-    //}
 }

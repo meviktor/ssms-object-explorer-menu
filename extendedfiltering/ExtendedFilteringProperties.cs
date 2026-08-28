@@ -1,6 +1,7 @@
 ﻿using SSMSObjectExplorerMenu.objects;
 using SSMSObjectExplorerMenu.extendedfiltering.PropertyTypes;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using static SSMSObjectExplorerMenu.Constants;
@@ -25,8 +26,6 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
     /// </summary>
     internal class ExtendedFilteringProperties
     {
-        private const byte SQL_SERVER_IDENTIFIER_MAX_LENGTH = 128;
-
         internal Server Server { get; private set; }
 
         internal Database Database { get; private set; }
@@ -73,33 +72,6 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
         public override string ToString() => !IsEmpty ? 
             $"{Server}{(Database != null ? $"/{Database}" : null)}{(Table != null ? $"/{Table}" : null)}{(Column != null ? $"/{Column}" : null)}" : string.Empty;
 
-        internal static (bool IsValid, string Error) ValidateForContext(string menuItemContext, string filter)
-        {
-            if (menuItemContext == null)
-                throw new ArgumentNullException(nameof(menuItemContext), $"Parameter '{nameof(menuItemContext)}' cannot be null.");
-
-            // proceeding only for contexts: Server/Database/Table/Column
-            if (!ExtendedFiltering_AllowedContexts.Contains(menuItemContext) && !string.IsNullOrEmpty(filter))
-                return (false, $"Providing additional filter for context '{menuItemContext}' is not allowed. Filter must be left empty.");
-
-            var menuItemContextLevel = menuItemContext.FromStringDescription<ContextLevel>();
-
-            ExtendedFilteringProperties props;
-            try
-            {
-                props = BuildFromNavigationContext(filter, menuItemContextLevel);
-            }
-            catch (ArgumentException ex)
-            {
-                return (false, $"Invalid additional filter: {ex.Message}");
-            }
-
-            // TODO: make the validation of navContext string's contextlevel vs. menuItem contextlevel here!
-            // Delete the check from BuildFromNavigationContext
-
-            return (true, null);
-        }
-
         /// <summary>
         /// Builds an <see cref="ExtendedFilteringProperties"/> instance from a navigation context string.
         /// </summary>
@@ -107,98 +79,81 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
         /// <param name="buildingForLevel">If we are creating/updating a filter for a menu item, the menu item's context - enables validating if the filter string is
         /// appropriate for the menu item's context. Don't fill it otherwise.</param>
         /// <returns></returns>
-        internal static ExtendedFilteringProperties BuildFromNavigationContext(string navigationContext, ContextLevel? buildingForLevel = null)
+        internal static ExtendedFilteringProperties BuildFromNavigationContext(string navigationContext, out IEnumerable<string> errors)
         {
-            var navContextSections = navigationContext.Split(['/'], StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim());
+            var navContextSections = navigationContext?.Split(['/'], StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()) ?? [];
+
+            errors = [];
 
             var parsedSections = navContextSections.Select(IdentifySection).ToArray();
             if (parsedSections.Any(s => !s.IsIdentified))
-            {
-                throw new ArgumentException(
-                    $"'{navigationContext}' contains either not allowed section types or sections with bad syntax. " + 
-                    $"Accepted section types: {nameof(Server)}, {nameof(Database)}, {nameof(Table)}, {nameof(Column)}.");
-            }
+                errors.Append(ERROR_BUILD_FILTER_UNKNOWN_SECTION);
 
-            var duplicatedSectionKinds = parsedSections.GroupBy(s => s.Kind).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
-            if (duplicatedSectionKinds.Any())
-            {
-                throw new ArgumentException(
-                    $"'{navigationContext}' contains duplicated sections: {string.Join(", ", duplicatedSectionKinds)}.");
-            }
+            var duplicatedSectionKinds = parsedSections.GroupBy(s => s.Kind).Any(g => g.Count() > 1);
+            if (duplicatedSectionKinds)
+                errors.Append(ERROR_BUILD_FILTER_DUPLICATED_SECTION);
 
             // Ordering: for each section, take all preceding section, and check if any of them has a lower context level - it's a fail.
             // Correct order of sections: Server, Database, Table, Column.
             if (parsedSections.Select((section, index) => new { section, index })
                               .Any(e => parsedSections.Take(e.index).Any(prevSection => Utils.EnumParse<ContextLevel>(prevSection.Kind) < Utils.EnumParse<ContextLevel>(e.section.Kind))))
-            {
-                throw new ArgumentException(
-                    $"'{navigationContext}' has invalid ordering. Correct order based on hierarchy: {nameof(Server)}, {nameof(Database)}, {nameof(Table)}, {nameof(Column)}.");
-            }
+                errors.Append(ERROR_BUILD_FILTER_INVALID_SECTION_ORDER);
 
             var columnSection = parsedSections.SingleOrDefault(s => s.Kind == nameof(Column));
             var tableSection = parsedSections.SingleOrDefault(s => s.Kind == nameof(Table));
             var databaseSection = parsedSections.SingleOrDefault(s => s.Kind == nameof(Database));
             var serverSection = parsedSections.SingleOrDefault(s => s.Kind == nameof(Server));
 
-            var filter = new ExtendedFilteringProperties();
-            filter.Column = columnSection != default ? new Column(columnSection.Properties.Single().Value) : null;
-            filter.Table = tableSection != default ? new Table(
-                tableSection.Properties.Single(p => p.Name == nameof(PropertyTypes.Table.Name)).Value,
-                tableSection.Properties.Single(p => p.Name == nameof(PropertyTypes.Table.Schema)).Value)
-                    : (filter.Column != null ? Table.Any : null);
-            filter.Database = databaseSection != default ? new Database(databaseSection.Properties.Single().Value) 
-                    : (filter.Table != null ? Database.Any : null);
-            filter.Server = serverSection != default ? new Server(serverSection.Properties.Single().Value)
-                    : (filter.Database != null ? Server.Any : null);
+            var columnName = columnSection?.Properties.Single().Value;
+            var tableName = tableSection?.Properties.Single(p => p.Name == nameof(PropertyTypes.Table.Name)).Value;
+            var schemaName = tableSection?.Properties.Single(p => p.Name == nameof(PropertyTypes.Table.Schema)).Value;
+            var databaseName = databaseSection?.Properties.Single().Value;
+            var serverName = serverSection?.Properties.Single().Value;
 
-            var lengthErrorTemplate = $"The provided {{0}} '{{1}}' exceeds maximum length of {SQL_SERVER_IDENTIFIER_MAX_LENGTH} characters.";
-            if (filter.Column?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
-                throw new ArgumentException(string.Format(lengthErrorTemplate, "column identifier", filter.Column.Name));
-            if (filter.Table?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
-                throw new ArgumentException(string.Format(lengthErrorTemplate, "table identifier", filter.Table.Name));
-            if (filter.Table?.Schema.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
-                throw new ArgumentException(string.Format(lengthErrorTemplate, "schema identifier", filter.Table.Schema));
-            if (filter.Database?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
-                throw new ArgumentException(string.Format(lengthErrorTemplate, "database identifier", filter.Database.Name));
-            if (filter.Server?.Name.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
-                throw new ArgumentException(string.Format(lengthErrorTemplate, "server identifier", filter.Server.Name));
+            if (columnName?.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
+                errors.Append(ERROR_BUILD_FILTER_COLUMN_NAME_TOO_LONG);
 
-            // Validate for menu item context - navigationContext cannot contain "lower level" segments, even if they are not filtering (using the '*' wildcard)
-            // For example: if the menu item's context is 'Table', you can't provide a segment with 'Column' type in the filter, like: Column[@Name='*'] or Column[@Name='Id']
-            if (buildingForLevel.HasValue &&
-               ((buildingForLevel == ContextLevel.Server && (filter.Database != null || filter.Table != null || filter.Column != null)) ||
-               (buildingForLevel == ContextLevel.Database && (filter.Table != null || filter.Column != null)) ||
-               (buildingForLevel == ContextLevel.Table && filter.Column != null)))
-                throw new ArgumentException(string.Format($"Additional filter targets '{buildingForLevel}' level. It cannot contain wildcard segment(s) for lower level(s)."));
+            if (tableName?.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
+                errors.Append(ERROR_BUILD_FILTER_TABLE_NAME_TOO_LONG);
 
-            return filter;
+            if (schemaName?.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
+                errors.Append(ERROR_BUILD_FILTER_SCHEMA_NAME_TOO_LONG);
+
+            if (databaseName?.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
+                errors.Append(ERROR_BUILD_FILTER_DATABASE_NAME_TOO_LONG);
+
+            if (serverName?.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
+                errors.Append(ERROR_BUILD_FILTER_SERVER_NAME_TOO_LONG);
+
+            if (errors.Any())
+                return null;
+
+            return new()
+            {
+                Column = columnSection != null ? new Column(columnName) : null,
+                Table = tableSection != null ? new Table(tableName, schemaName) : (columnSection != null ? Table.Any : null),
+                Database = databaseSection != null ? new Database(databaseName) : (tableSection != null ? Database.Any : null),
+                Server = serverSection != null ? new Server(serverName) : (databaseSection != null ? Server.Any : null)
+            };
         }
 
         private static NavContextSection IdentifySection(string section)
         {
             var serverMatch = Server.Regex.Match(section);
             if (serverMatch.Success)
-            {
-                return new () { Kind = nameof(Server), Properties = [(nameof(PropertyTypes.Server.Name), serverMatch.Groups[1].Value)] };
-            }
+                return new() { Kind = nameof(Server), Properties = [(nameof(PropertyTypes.Server.Name), serverMatch.Groups[1].Value)] };
 
             var databaseMatch = Database.Regex.Match(section);
             if (databaseMatch.Success)
-            {
                 return new() { Kind = nameof(Database), Properties = [(nameof(PropertyTypes.Database.Name), databaseMatch.Groups[1].Value)] };
-            }
 
             var tableMatch = Table.Regex.Match(section);
             if (tableMatch.Success)
-            {
                 return new() { Kind = nameof(Table), Properties = [(nameof(PropertyTypes.Table.Name), tableMatch.Groups[1].Value), (nameof(PropertyTypes.Table.Schema), tableMatch.Groups[2].Value)] };
-            }
 
             var columnMatch = Column.Regex.Match(section);
             if (columnMatch.Success)
-            {
                 return new() { Kind = nameof(Column), Properties = [(nameof(PropertyTypes.Column.Name), columnMatch.Groups[1].Value)] };
-            }
 
             return new() { Kind = null, Properties = null };
         }
@@ -229,7 +184,7 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             if (node is null)
                 throw new ArgumentNullException(nameof(node), $"Parameter '{nameof(node)}' cannot be null.");
             if (node.IsEmpty)
-                throw new ArgumentException(nameof(node), $"Parameter '{nameof(node)}' does not filter for anything.");
+                throw new ArgumentException(nameof(node), $"Parameter '{nameof(node)}' does not designate an SSMS Object Explorer node.");
 
             if (filter.IsNullOrEmpty())
                 return true;
@@ -267,6 +222,33 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
 
             // Node passed filtering
             return true;
+        }
+
+        internal static bool TryValidateForContext(this ExtendedFilteringProperties filter, string targetContext, out IEnumerable<string> errors)
+        {
+            var filterProvided = filter.IsNullOrEmpty();
+            var targetContextProvided = string.IsNullOrEmpty(targetContext);
+
+            errors = [];
+
+            if (!filterProvided)
+                errors.Append(ERROR_FILTER_VALIDATE_CONTEXT_NO_FILTER);
+
+            if (!targetContextProvided)
+                errors.Append(ERROR_FILTER_VALIDATE_CONTEXT_NO_CONTEXT);
+
+            var targetContextApplicable = ExtendedFiltering_AllowedContexts.Contains(targetContext);
+            if (!targetContextApplicable)
+                errors.Append(ERROR_FILTER_VALIDATE_CONTEXT_CONTEXT_NOT_APPLICABLE);
+
+            if (filterProvided && targetContextApplicable)
+            {
+                var targetContextLevel = targetContext.FromStringDescription<ContextLevel>();
+                if (filter.Context < targetContextLevel)
+                    errors.Append(ERROR_FILTER_VALIDATE_CONTEXT_FILTER_TARGETS_LOW_CONTEXT);
+            }
+
+            return !errors.Any();
         }
     }
 

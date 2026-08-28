@@ -3,9 +3,7 @@ using SSMSObjectExplorerMenu.extensions;
 using SSMSObjectExplorerMenu.objects;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using static SSMSObjectExplorerMenu.Constants;
 
@@ -13,8 +11,7 @@ namespace SSMSObjectExplorerMenu.controls
 {
     public partial class DefaultValueControl : UserControl
     {
-        
-		private Dictionary<UserDefinedParameterType, Control> _defaultValueInputControls = new Dictionary<UserDefinedParameterType, Control>();
+		private readonly Dictionary<UserDefinedParameterType, Control> _defaultValueInputControls = [];
         private UserDefinedParameterType _currentType;
         private string[] _customListAvailableOptions;
 
@@ -69,7 +66,7 @@ namespace SSMSObjectExplorerMenu.controls
             {
                 var originalSelectedValue = customListComboBox.SelectedValue;
 
-                _customListAvailableOptions = e.NewItems.Select(item => item.Text).ToArray();
+                _customListAvailableOptions = [.. e.NewItems.Select(item => item.Text)];
                 var selectedItemNotFound = (e.ChangeType == ObservableListViewChangeType.Remove || e.ChangeType == ObservableListViewChangeType.Edit) 
                     && !_customListAvailableOptions.Any(i => i == (string)originalSelectedValue);
 
@@ -95,16 +92,16 @@ namespace SSMSObjectExplorerMenu.controls
 
             var datetime2_tb = new TextBox {
 				Text = (edit && currentType == UserDefinedParameterType.DateTime2)
-                    ? (DateTime.TryParse(stringPresetValue, out DateTime _) ? stringPresetValue : $"{Utils.DateTimeTodayUtc.ToString(DateTime2_FormatString)}")
-                    : $"{Utils.DateTimeTodayUtc.ToString(DateTime2_FormatString)}"
+                    ? (DateTime.TryParse(stringPresetValue, out DateTime _) ? stringPresetValue : $"{DateTime.TodayUtc.ToString(DateTime2_FormatString)}")
+                    : $"{DateTime.TodayUtc.ToString(DateTime2_FormatString)}"
             };
             var datetimeoffset_tb = new TextBox {
 				Text = (edit && currentType == UserDefinedParameterType.DateTimeOffset)
-                    ? (DateTimeOffset.TryParse(stringPresetValue, out DateTimeOffset _) ? stringPresetValue : $"{Utils.DateTimeOffsetTodayUtc.ToString(DateTimeOffset_FormatString)}")
-                    : $"{Utils.DateTimeOffsetTodayUtc.ToString(DateTimeOffset_FormatString)}"
+                    ? (DateTimeOffset.TryParse(stringPresetValue, out DateTimeOffset _) ? stringPresetValue : $"{DateTimeOffset.TodayUtc.ToString(DateTimeOffset_FormatString)}")
+                    : $"{DateTimeOffset.TodayUtc.ToString(DateTimeOffset_FormatString)}"
             };
 
-            _customListAvailableOptions = customListPresetValue?.AvailableOptions?.ToArray() ?? Array.Empty<string>();
+            _customListAvailableOptions = customListPresetValue?.AvailableOptions?.ToArray() ?? [];
             var editingCustomList = edit && currentType == UserDefinedParameterType.CustomList;
             var customList_cb = new ComboBox().SetDataSource<string>(_customListAvailableOptions);
 

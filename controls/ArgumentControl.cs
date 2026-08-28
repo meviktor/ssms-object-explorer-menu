@@ -117,13 +117,13 @@ namespace SSMSObjectExplorerMenu.controls
         private void Init_DateTime2() => _valueControl = new TextBox() { 
             Text = DateTime.TryParse(Parameter.DefaultValueAsString, out DateTime _)
                 ? Parameter.DefaultValueAsString
-                : Utils.DateTimeTodayUtc.ToString(DateTime2_FormatString)
+                : DateTime.TodayUtc.ToString(DateTime2_FormatString)
         };
 
         private void Init_DateTimeOffset() => _valueControl = new TextBox() { 
             Text = DateTimeOffset.TryParse(Parameter.DefaultValueAsString, out DateTimeOffset _) 
                 ? Parameter.DefaultValueAsString
-                : Utils.DateTimeOffsetTodayUtc.ToString(DateTimeOffset_FormatString)
+                : DateTimeOffset.TodayUtc.ToString(DateTimeOffset_FormatString)
         };
 
         private void Init_CustomList()

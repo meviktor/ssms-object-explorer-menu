@@ -108,9 +108,12 @@
     <Compile Include="extendedfiltering\PropertyTypes\NameSchemaProperties.cs" />
     <Compile Include="extendedfiltering\PropertyTypes\Server.cs" />
     <Compile Include="extendedfiltering\PropertyTypes\Table.cs" />
+    <Compile Include="extensions\DateAndTimeExtensions.cs" />
+    <Compile Include="extensions\EnumExtensions.cs" />
     <Compile Include="extensions\Extensions.cs" />
+    <Compile Include="extensions\StringExtensions.cs" />
     <Compile Include="extensions\UIExtensions.cs" />
-    <Compile Include="FilteringExtensions.cs" />
+    <Compile Include="extendedfiltering\FilteringExtensions.cs" />
     <Compile Include="objects\ComboBoxItem.cs" />
     <Compile Include="objects\CustomListDefaultValueModel.cs" />
     <Compile Include="objects\MenuItemErrorModel.cs" />

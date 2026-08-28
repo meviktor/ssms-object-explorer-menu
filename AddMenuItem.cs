@@ -41,19 +41,22 @@ namespace SSMSObjectExplorerMenu
 			//ValidateInputs();
 		}
 
-		private (bool isValid, string[] validationErrors) ValidateInputs()
+		private bool TryValidateInputs(out IEnumerable<string> validationErrors)
 		{
-            var validationErrors = new List<string>();
+			validationErrors = [];
+
             if (textName.Text.Trim().Length == 0)
-                validationErrors.Add("Name cannot be empty.");
+                validationErrors.Append("Name cannot be empty.");
             if (textPath.Text.Trim().Length == 0)
-                validationErrors.Add("Path cannot be empty.");
+                validationErrors.Append("Path cannot be empty.");
 
-            var (isFilterValid, error) = ExtendedFilteringProperties.ValidateForContext(comboContext.Text, $"{this.advancedFilterControl.Filter}");
-            if (!isFilterValid)
-                validationErrors.Add(error);
+            var filter = ExtendedFilteringProperties.BuildFromNavigationContext($"{this.advancedFilterControl.Filter}", out var buildFilterErrors);
+			if (filter != null && !filter.TryValidateForContext(comboContext.Text, out var contextErrors))
+                validationErrors.Concat(contextErrors);
+            else if (filter == null)
+                validationErrors.Concat(buildFilterErrors);
 
-            return (validationErrors.Count == 0, validationErrors.ToArray());
+			return !validationErrors.Any();
 		}
 
 		private void buttonOpen_Click(object sender, EventArgs e)
@@ -73,7 +76,6 @@ namespace SSMSObjectExplorerMenu
 		{
 			updateDisplay();
 		}
-
 
 		private void updateDisplay()
 		{
@@ -107,14 +109,9 @@ namespace SSMSObjectExplorerMenu
                 newListViewItem.SubItems.Add(new ListViewItem.ListViewSubItem { Text = newParam.Type.ToStringDescription() });
 				newListViewItem.SubItems.Add(new ListViewItem.ListViewSubItem { Text = newParam.DefaultValueAsString });
 
-				listViewUserDefinedParam.Items.Add(newListViewItem);			
-
+				listViewUserDefinedParam.Items.Add(newListViewItem);
 			}
-
-			
 		}
-
-
 
         private void buttonEditUserDefinedParam_Click(object sender, EventArgs e)
         {
@@ -149,27 +146,26 @@ namespace SSMSObjectExplorerMenu
         private void listViewUserDefinedParam_SelectedIndexChanged(object sender, EventArgs e)
         {
 			// In case of removing items, a minimal delay is needed to work with the state of the listview after the item has been removed.
-            this.BeginInvoke((Action)(() =>
+            this.BeginInvoke(() =>
 			{
 				var selectedItemsCount = this.listViewUserDefinedParam.GetSelectedItems().Count();
 				this.buttonEditUserDefinedParameter.Enabled = selectedItemsCount == 1;
 				this.buttonRemoveUserDefinedParam.Enabled = selectedItemsCount > 0;
-			}));
+			});
         }
 
         private IEnumerable<string> GetArgumentNamesInUse() => this.listViewUserDefinedParam.Items.Cast<ListViewItem>().Select(item => item.Text).Concat(Utils.ParametersFromContext);
 
 		private void buttonOK_Click(object sender, EventArgs e)
 		{
-			var (isValid, validationErrors) = ValidateInputs();
-			if (isValid)
+			if (TryValidateInputs(out var errors))
 			{
 				this.DialogResult = DialogResult.OK;
 				this.Close();
 			}
 			else
 			{
-				var dlgTextErrors = string.Join(Environment.NewLine, validationErrors);
+				var dlgTextErrors = string.Join(Environment.NewLine, errors);
                 MessageBox.Show($"One- or more error(s) occurred:{Environment.NewLine}{dlgTextErrors}", "Menu item cannot be saved", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}

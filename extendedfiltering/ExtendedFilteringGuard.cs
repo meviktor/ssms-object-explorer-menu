@@ -12,10 +12,10 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             if (!Constants.ExtendedFiltering_AllowedContexts.Contains(targetNode.UrnPath))
                 return true;
 
-            var node = ExtendedFilteringProperties.BuildFromNavigationContext(targetNode.NavigationContext);
-            var filter = ExtendedFilteringProperties.BuildFromNavigationContext(menuItemFilter);
+            var node = ExtendedFilteringProperties.BuildFromNavigationContext(targetNode.NavigationContext, out var _);
+            var filter = ExtendedFilteringProperties.BuildFromNavigationContext(menuItemFilter, out var _);
 
-            return node.ApplyFiltering(filter);
+            return node != null && filter != null && node.ApplyFiltering(filter);
         }
     }
 }
