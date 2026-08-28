@@ -91,14 +91,14 @@ namespace SSMSObjectExplorerMenu.Tests.extendedfiltering
             => Section_Identify_Test_Core(shouldIdentify, ERROR_BUILD_FILTER_UNKNOWN_SECTION, sectionType, name, schema);
 
         [Theory]
-        [InlineData(ContextLevel.Column, Identifier_Invalid_LongerThan128Chars)]
-        [InlineData(ContextLevel.Database, Identifier_Invalid_LongerThan128Chars)]
-        [InlineData(ContextLevel.Table, Identifier_Valid, Identifier_Invalid_LongerThan128Chars)]
-        [InlineData(ContextLevel.Table, Identifier_Invalid_LongerThan128Chars, Identifier_Invalid_LongerThan128Chars)]
-        [InlineData(ContextLevel.Server, Identifier_Invalid_LongerThan128Chars)]
+        [InlineData(ERROR_BUILD_FILTER_COLUMN_NAME_TOO_LONG, ContextLevel.Column, Identifier_Invalid_LongerThan128Chars)]
+        [InlineData(ERROR_BUILD_FILTER_DATABASE_NAME_TOO_LONG, ContextLevel.Database, Identifier_Invalid_LongerThan128Chars)]
+        [InlineData(ERROR_BUILD_FILTER_SCHEMA_NAME_TOO_LONG, ContextLevel.Table, Identifier_Valid, Identifier_Invalid_LongerThan128Chars)]
+        [InlineData(ERROR_BUILD_FILTER_TABLE_NAME_TOO_LONG, ContextLevel.Table, Identifier_Invalid_LongerThan128Chars, Identifier_Valid)]
+        [InlineData(ERROR_BUILD_FILTER_SERVER_NAME_TOO_LONG, ContextLevel.Server, Identifier_Invalid_LongerThan128Chars)]
         // Section_Identify_Test, specific cases of too long identifiers (> 128 chars)
-        internal void Section_Identify_Test_IdentifierTooLong(ContextLevel sectionType, string? name, string? schema = null)
-             => Section_Identify_Test_Core(false, ERROR_BUILD_FILTER_SERVER_NAME_TOO_LONG, sectionType, name, schema);
+        internal void Section_Identify_Test_IdentifierTooLong(string expectedError, ContextLevel sectionType, string? name, string? schema = null)
+             => Section_Identify_Test_Core(false, expectedError, sectionType, name, schema);
 
         [Theory]
         #region TestCases

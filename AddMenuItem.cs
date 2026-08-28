@@ -45,16 +45,16 @@ namespace SSMSObjectExplorerMenu
 		{
 			validationErrors = [];
 
-            if (textName.Text.Trim().Length == 0)
-                validationErrors.Append("Name cannot be empty.");
-            if (textPath.Text.Trim().Length == 0)
-                validationErrors.Append("Path cannot be empty.");
+            if (string.IsNullOrWhiteSpace(this.textName.Text))
+                validationErrors = validationErrors.Append("Name cannot be empty.");
+            if (string.IsNullOrWhiteSpace(this.textPath.Text))
+                validationErrors = validationErrors.Append("Path cannot be empty.");
 
             var filter = ExtendedFilteringProperties.BuildFromNavigationContext($"{this.advancedFilterControl.Filter}", out var buildFilterErrors);
 			if (filter != null && !filter.TryValidateForContext(comboContext.Text, out var contextErrors))
-                validationErrors.Concat(contextErrors);
+                validationErrors = validationErrors.Concat(contextErrors);
             else if (filter == null)
-                validationErrors.Concat(buildFilterErrors);
+                validationErrors = validationErrors.Concat(buildFilterErrors);
 
 			return !validationErrors.Any();
 		}

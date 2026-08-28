@@ -81,28 +81,31 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
         /// <returns></returns>
         internal static ExtendedFilteringProperties BuildFromNavigationContext(string navigationContext, out IEnumerable<string> errors)
         {
-            var navContextSections = navigationContext?.Split(['/'], StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()) ?? [];
+            var navContextSections = navigationContext?
+                .Split(['/'], StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => s.Trim())
+                .Where(s => !string.IsNullOrEmpty(s)) ?? [];
 
             errors = [];
 
             var parsedSections = navContextSections.Select(IdentifySection).ToArray();
             if (parsedSections.Any(s => !s.IsIdentified))
-                errors.Append(ERROR_BUILD_FILTER_UNKNOWN_SECTION);
+                errors = errors.Append(ERROR_BUILD_FILTER_UNKNOWN_SECTION);
 
             var duplicatedSectionKinds = parsedSections.GroupBy(s => s.Kind).Any(g => g.Count() > 1);
             if (duplicatedSectionKinds)
-                errors.Append(ERROR_BUILD_FILTER_DUPLICATED_SECTION);
+                errors = errors.Append(ERROR_BUILD_FILTER_DUPLICATED_SECTION);
 
             // Ordering: for each section, take all preceding section, and check if any of them has a lower context level - it's a fail.
             // Correct order of sections: Server, Database, Table, Column.
             if (parsedSections.Select((section, index) => new { section, index })
                               .Any(e => parsedSections.Take(e.index).Any(prevSection => Utils.EnumParse<ContextLevel>(prevSection.Kind) < Utils.EnumParse<ContextLevel>(e.section.Kind))))
-                errors.Append(ERROR_BUILD_FILTER_INVALID_SECTION_ORDER);
+                errors = errors.Append(ERROR_BUILD_FILTER_INVALID_SECTION_ORDER);
 
-            var columnSection = parsedSections.SingleOrDefault(s => s.Kind == nameof(Column));
-            var tableSection = parsedSections.SingleOrDefault(s => s.Kind == nameof(Table));
-            var databaseSection = parsedSections.SingleOrDefault(s => s.Kind == nameof(Database));
-            var serverSection = parsedSections.SingleOrDefault(s => s.Kind == nameof(Server));
+            var columnSection = parsedSections.FirstOrDefault(s => s.Kind == nameof(Column));
+            var tableSection = parsedSections.FirstOrDefault(s => s.Kind == nameof(Table));
+            var databaseSection = parsedSections.FirstOrDefault(s => s.Kind == nameof(Database));
+            var serverSection = parsedSections.FirstOrDefault(s => s.Kind == nameof(Server));
 
             var columnName = columnSection?.Properties.Single().Value;
             var tableName = tableSection?.Properties.Single(p => p.Name == nameof(PropertyTypes.Table.Name)).Value;
@@ -111,30 +114,30 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             var serverName = serverSection?.Properties.Single().Value;
 
             if (columnName?.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
-                errors.Append(ERROR_BUILD_FILTER_COLUMN_NAME_TOO_LONG);
+                errors = errors.Append(ERROR_BUILD_FILTER_COLUMN_NAME_TOO_LONG);
 
             if (tableName?.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
-                errors.Append(ERROR_BUILD_FILTER_TABLE_NAME_TOO_LONG);
+                errors = errors.Append(ERROR_BUILD_FILTER_TABLE_NAME_TOO_LONG);
 
             if (schemaName?.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
-                errors.Append(ERROR_BUILD_FILTER_SCHEMA_NAME_TOO_LONG);
+                errors = errors.Append(ERROR_BUILD_FILTER_SCHEMA_NAME_TOO_LONG);
 
             if (databaseName?.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
-                errors.Append(ERROR_BUILD_FILTER_DATABASE_NAME_TOO_LONG);
+                errors = errors.Append(ERROR_BUILD_FILTER_DATABASE_NAME_TOO_LONG);
 
             if (serverName?.Length > SQL_SERVER_IDENTIFIER_MAX_LENGTH)
-                errors.Append(ERROR_BUILD_FILTER_SERVER_NAME_TOO_LONG);
+                errors = errors.Append(ERROR_BUILD_FILTER_SERVER_NAME_TOO_LONG);
 
             if (errors.Any())
                 return null;
 
-            return new()
-            {
-                Column = columnSection != null ? new Column(columnName) : null,
-                Table = tableSection != null ? new Table(tableName, schemaName) : (columnSection != null ? Table.Any : null),
-                Database = databaseSection != null ? new Database(databaseName) : (tableSection != null ? Database.Any : null),
-                Server = serverSection != null ? new Server(serverName) : (databaseSection != null ? Server.Any : null)
-            };
+            var filter = new ExtendedFilteringProperties();
+            filter.Column = columnSection != null ? new Column(columnName) : null;
+            filter.Table = tableSection != null ? new Table(tableName, schemaName) : (filter.Column != null ? Table.Any : null);
+            filter.Database = databaseSection != null ? new Database(databaseName) : (filter.Table != null ? Database.Any : null);
+            filter.Server = serverSection != null ? new Server(serverName) : (filter.Database != null ? Server.Any : null);
+
+            return filter;
         }
 
         private static NavContextSection IdentifySection(string section)
@@ -194,30 +197,32 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
                 return false;
 
             // Failing on column name: node is column, filter applies on columns; column name does not match.
-            if (node.Context == ContextLevel.Column && filter.Column.IsActiveFilter && node.Column.Name != filter.Column.Name)
+            if (node.Context == ContextLevel.Column && filter.Column.IsActiveFilter && node.Column != filter.Column)
                 return false;
 
             // Failing on table name and/or schema: node is column or table, filter applies on tables; table name/schema does not match.
             if (node.Context <= ContextLevel.Table && filter.Table.IsActiveFilter)
             {
+                var tableNamesMatch = node.Table?.Name.Equals(filter.Table?.Name, StringComparison.OrdinalIgnoreCase) ?? false;
+                var schemaNamesMatch = node.Table?.Schema.Equals(filter.Table?.Schema, StringComparison.OrdinalIgnoreCase) ?? false;
                 var tableOrSchemaNotMatch =
                     // Filtering for table name & schema: if any of them does not match, it's a fail
-                    (filter.Table?.Name != Wildcard_Any && filter.Table?.Schema != Wildcard_Any && (node.Table?.Name != filter.Table?.Name || node.Table?.Schema != filter.Table?.Schema))
+                    (filter.Table?.Name != Wildcard_Any && filter.Table?.Schema != Wildcard_Any && (!tableNamesMatch || !schemaNamesMatch))
                     // Filtering for table name only: if table name does not match, it's a fail
-                    || (filter.Table?.Name != Wildcard_Any && filter.Table?.Schema == Wildcard_Any && node.Table?.Name != filter.Table?.Name)
+                    || (filter.Table?.Name != Wildcard_Any && filter.Table?.Schema == Wildcard_Any && !tableNamesMatch)
                     // Filtering for schema only: if schema does not match, it's a fail
-                    || (filter.Table?.Name == Wildcard_Any && filter.Table?.Schema != Wildcard_Any && node.Table?.Schema != filter.Table?.Schema);
+                    || (filter.Table?.Name == Wildcard_Any && filter.Table?.Schema != Wildcard_Any && !schemaNamesMatch);
 
                 if (tableOrSchemaNotMatch)
                     return false;
             }
 
             // Failing on database name: node is column, table or database, filter applies on databases; database name does not match.
-            if (node.Context <= ContextLevel.Database && filter.Database.IsActiveFilter && node.Database?.Name != filter.Database?.Name)
+            if (node.Context <= ContextLevel.Database && filter.Database.IsActiveFilter && node.Database != filter.Database)
                 return false;
 
             // Failing on server name: any kind of node, filter applies on servers; server name does not match.
-            if (filter.Server.IsActiveFilter && node.Server?.Name != filter.Server?.Name)
+            if (filter.Server.IsActiveFilter && node.Server != filter.Server)
                 return false;
 
             // Node passed filtering
@@ -226,26 +231,26 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
 
         internal static bool TryValidateForContext(this ExtendedFilteringProperties filter, string targetContext, out IEnumerable<string> errors)
         {
-            var filterProvided = filter.IsNullOrEmpty();
-            var targetContextProvided = string.IsNullOrEmpty(targetContext);
+            var filterProvided = !filter.IsNullOrEmpty();
+            var targetContextProvided = !string.IsNullOrEmpty(targetContext);
 
             errors = [];
 
             if (!filterProvided)
-                errors.Append(ERROR_FILTER_VALIDATE_CONTEXT_NO_FILTER);
+                errors = errors.Append(ERROR_FILTER_VALIDATE_CONTEXT_NO_FILTER);
 
             if (!targetContextProvided)
-                errors.Append(ERROR_FILTER_VALIDATE_CONTEXT_NO_CONTEXT);
+                errors = errors.Append(ERROR_FILTER_VALIDATE_CONTEXT_NO_CONTEXT);
 
             var targetContextApplicable = ExtendedFiltering_AllowedContexts.Contains(targetContext);
             if (!targetContextApplicable)
-                errors.Append(ERROR_FILTER_VALIDATE_CONTEXT_CONTEXT_NOT_APPLICABLE);
+                errors = errors.Append(ERROR_FILTER_VALIDATE_CONTEXT_CONTEXT_NOT_APPLICABLE);
 
             if (filterProvided && targetContextApplicable)
             {
                 var targetContextLevel = targetContext.FromStringDescription<ContextLevel>();
                 if (filter.Context < targetContextLevel)
-                    errors.Append(ERROR_FILTER_VALIDATE_CONTEXT_FILTER_TARGETS_LOW_CONTEXT);
+                    errors = errors.Append(ERROR_FILTER_VALIDATE_CONTEXT_FILTER_TARGETS_LOW_CONTEXT);
             }
 
             return !errors.Any();
