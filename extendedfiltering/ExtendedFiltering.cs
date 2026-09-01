@@ -10,7 +10,7 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
         /// Naming rule based on the rules of the SQL Server regular (NOT delimited) identifiers.<br/>
         /// As starting the object name with '@', '@@', '#' and '##' have special meaning, starting the identifiers with '@' or '#' is prohibited.
         /// </summary>
-        internal static readonly Regex @Regex_RegularIdentifiers = new(@"[^\W\d][\w@#$]*", RegexOptions.IgnoreCase);
+        internal static readonly Regex @Regex_RegularIdentifiers = new(@"[\p{L}_][\p{L}\d@$#_]*", RegexOptions.IgnoreCase);
 
         /// <summary>
         /// Validation regex for delimited identifiers. The only thing checked if quotes (if any) are escaped properly.
