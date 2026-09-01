@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Text.RegularExpressions;
+using static SSMSObjectExplorerMenu.extendedfiltering.ExtendedFiltering;
 
 namespace SSMSObjectExplorerMenu.extendedfiltering.PropertyTypes
 {
@@ -13,6 +15,23 @@ namespace SSMSObjectExplorerMenu.extendedfiltering.PropertyTypes
                 throw new ArgumentNullException(nameof(schema), $"Parameter '{nameof(schema)}' cannot be null.");
             }
             Schema = schema;
+        }
+
+        protected static ValidationResult Validate_NameSchema(string section, Regex fullSectionRegex, Regex valueRegex)
+        {
+            var match = fullSectionRegex.Match(section);
+            if (!match.Success)
+                return new(false, null, []);
+
+            var name = match.Groups["Name"].Value;
+            var schema = match.Groups["Schema"].Value;
+
+            var nameMatch = valueRegex.Match(name);
+            var schemaMatch = valueRegex.Match(schema);
+            if (!nameMatch.Success || !schemaMatch.Success)
+                return new(true, true, []);
+
+            return new(true, false, [("Name", nameMatch.Value), ("Schema", schemaMatch.Value)]);
         }
 
         public bool Equals(NameSchemaProperties other) => base.Equals(other)

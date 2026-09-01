@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace SSMSObjectExplorerMenu.extendedfiltering.PropertyTypes
 {
@@ -13,6 +14,20 @@ namespace SSMSObjectExplorerMenu.extendedfiltering.PropertyTypes
                 throw new ArgumentNullException(nameof(name), $"Parameter '{nameof(name)}' cannot be null or whitespace.");
             }
             Name = name;
+        }
+
+        protected static ValidationResult Validate_Name(string section, Regex fullSectionRegex, Regex valueRegex)
+        {
+            var match = fullSectionRegex.Match(section);
+            if (!match.Success)
+                return new(false, null, []);
+
+            var name = match.Groups["Name"].Value;
+            var nameMatch = valueRegex.Match(name);
+            if (!nameMatch.Success)
+                return new(true, true, []);
+
+            return new(true, false, [("Name", nameMatch.Value)]);
         }
 
         public bool Equals(NameProperty other)

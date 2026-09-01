@@ -63,34 +63,51 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             }
         }
 
+        internal ContextLevel[] FilterSections
+        {
+            get
+            {
+                var _sections = new List<ContextLevel>();
+
+                if (Column != null) _sections.Add(ContextLevel.Column);
+                if (Table != null) _sections.Add(ContextLevel.Table);
+                if (Database != null) _sections.Add(ContextLevel.Database);
+                if (Server != null) _sections.Add(ContextLevel.Server);
+
+                return [.. _sections];
+            }
+        }
+
         internal bool IsEmpty => Context is null;
 
         /// <summary>
         /// Returns the filter in string representation, resembling the navigation context format.
         /// </summary>
         /// <returns></returns>
-        public override string ToString() => !IsEmpty ? 
-            $"{Server}{(Database != null ? $"/{Database}" : null)}{(Table != null ? $"/{Table}" : null)}{(Column != null ? $"/{Column}" : null)}" : string.Empty;
+        public override string ToString() => $"{Server}{(Database != null ? $"/{Database}" : null)}{(Table != null ? $"/{Table}" : null)}{(Column != null ? $"/{Column}" : null)}";
 
         /// <summary>
         /// Builds an <see cref="ExtendedFilteringProperties"/> instance from a navigation context string.
         /// </summary>
         /// <param name="navigationContext">The navigaton context belongs to the SSMS Object Explorer tree node.</param>
-        /// <param name="buildingForLevel">If we are creating/updating a filter for a menu item, the menu item's context - enables validating if the filter string is
-        /// appropriate for the menu item's context. Don't fill it otherwise.</param>
+        /// <param name="useRegularIdentifiers">TODO!</param>
         /// <returns></returns>
-        internal static ExtendedFilteringProperties BuildFromNavigationContext(string navigationContext, out IEnumerable<string> errors)
+        internal static ExtendedFilteringProperties BuildFromNavigationContext(string navigationContext, bool useRegularIdentifiers, out IEnumerable<string> errors)
         {
             var navContextSections = navigationContext?
                 .Split(['/'], StringSplitOptions.RemoveEmptyEntries)
                 .Select(s => s.Trim())
                 .Where(s => !string.IsNullOrEmpty(s)) ?? [];
 
-            errors = [];
-
-            var parsedSections = navContextSections.Select(IdentifySection).ToArray();
+            var parsedSections = navContextSections.Select(s => IdentifySection(s, useRegularIdentifiers)).ToArray();
             if (parsedSections.Any(s => !s.IsIdentified))
-                errors = errors.Append(ERROR_BUILD_FILTER_UNKNOWN_SECTION);
+            {
+                // In case the string contains unidentifiable section(s): stop collecting further errors
+                errors = [ ERROR_BUILD_FILTER_UNKNOWN_SECTION ];
+                return null;
+            }
+
+            errors = [];
 
             var duplicatedSectionKinds = parsedSections.GroupBy(s => s.Kind).Any(g => g.Count() > 1);
             if (duplicatedSectionKinds)
@@ -106,6 +123,18 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             var tableSection = parsedSections.FirstOrDefault(s => s.Kind == nameof(Table));
             var databaseSection = parsedSections.FirstOrDefault(s => s.Kind == nameof(Database));
             var serverSection = parsedSections.FirstOrDefault(s => s.Kind == nameof(Server));
+
+            if (columnSection?.HasValueSyntaxErrors == true)
+                errors = errors.Append(useRegularIdentifiers ? ERROR_BUILD_FILTER_COLUMN_NAME_NOT_A_REGULAR_IDENTIFIER : ERROR_BUILD_FILTER_COLUMN_NAME_UNESCAPED_QUOTES);
+
+            if (tableSection?.HasValueSyntaxErrors == true)
+                errors = errors.Append(useRegularIdentifiers ? ERROR_BUILD_FILTER_TABLE_NAME_NOT_A_REGULAR_IDENTIFIER : ERROR_BUILD_FILTER_TABLE_NAME_UNESCAPED_QUOTES);
+
+            if (databaseSection?.HasValueSyntaxErrors == true)
+                errors = errors.Append(useRegularIdentifiers ? ERROR_BUILD_FILTER_DATABASE_NAME_NOT_A_REGULAR_IDENTIFIER : ERROR_BUILD_FILTER_DATABASE_NAME_UNESCAPED_QUOTES);
+
+            if (serverSection?.HasValueSyntaxErrors == true)
+                errors = errors.Append(ERROR_BUILD_FILTER_SERVER_NAME_UNESCAPED_QUOTES);
 
             var columnName = columnSection?.Properties.Single().Value;
             var tableName = tableSection?.Properties.Single(p => p.Name == nameof(PropertyTypes.Table.Name)).Value;
@@ -140,30 +169,37 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
             return filter;
         }
 
-        private static NavContextSection IdentifySection(string section)
+        private static NavContextSection IdentifySection(string section, bool useRegularIdentifiers)
         {
-            var serverMatch = Server.Regex.Match(section);
-            if (serverMatch.Success)
-                return new() { Kind = nameof(Server), Properties = [(nameof(PropertyTypes.Server.Name), serverMatch.Groups[1].Value)] };
+            static NavContextSection toNavContextSection(ValidationResult result, string kind) 
+                => new() { Kind = kind, HasValueSyntaxErrors = result.HasSyntaxErrors, Properties = result.ExtractedProperties };
 
-            var databaseMatch = Database.Regex.Match(section);
-            if (databaseMatch.Success)
-                return new() { Kind = nameof(Database), Properties = [(nameof(PropertyTypes.Database.Name), databaseMatch.Groups[1].Value)] };
+            ValidationResult validationResult;
+            
+            validationResult = Server.Validate(section);
+            if (validationResult.IsIdentified)
+                return toNavContextSection(validationResult, nameof(Server));
 
-            var tableMatch = Table.Regex.Match(section);
-            if (tableMatch.Success)
-                return new() { Kind = nameof(Table), Properties = [(nameof(PropertyTypes.Table.Name), tableMatch.Groups[1].Value), (nameof(PropertyTypes.Table.Schema), tableMatch.Groups[2].Value)] };
+            validationResult = Database.Validate(section, useRegularIdentifiers);
+            if (validationResult.IsIdentified)
+                return toNavContextSection(validationResult, nameof(Database));
 
-            var columnMatch = Column.Regex.Match(section);
-            if (columnMatch.Success)
-                return new() { Kind = nameof(Column), Properties = [(nameof(PropertyTypes.Column.Name), columnMatch.Groups[1].Value)] };
+            validationResult = Table.Validate(section, useRegularIdentifiers);
+            if (validationResult.IsIdentified)
+                return toNavContextSection(validationResult, nameof(Table));
 
-            return new() { Kind = null, Properties = null };
+            validationResult = Column.Validate(section, useRegularIdentifiers);
+            if (validationResult.IsIdentified)
+                return toNavContextSection(validationResult, nameof(Column));
+
+            return new() { Kind = null, HasValueSyntaxErrors = null, Properties = [] };
         }
 
         class NavContextSection()
         {
             internal bool IsIdentified => !string.IsNullOrEmpty(Kind);
+
+            internal bool? HasValueSyntaxErrors { get; set; }
 
             internal string Kind { get; set; }
 
@@ -231,23 +267,28 @@ namespace SSMSObjectExplorerMenu.extendedfiltering
 
         internal static bool TryValidateForContext(this ExtendedFilteringProperties filter, string targetContext, out IEnumerable<string> errors)
         {
-            var filterProvided = !filter.IsNullOrEmpty();
-            var targetContextProvided = !string.IsNullOrEmpty(targetContext);
-
             errors = [];
 
-            if (!filterProvided)
+            // TODO: align tests
+            if (filter == null)
                 errors = errors.Append(ERROR_FILTER_VALIDATE_CONTEXT_NO_FILTER);
 
+            var targetContextProvided = !string.IsNullOrEmpty(targetContext);
             if (!targetContextProvided)
                 errors = errors.Append(ERROR_FILTER_VALIDATE_CONTEXT_NO_CONTEXT);
 
-            var targetContextApplicable = ExtendedFiltering_AllowedContexts.Contains(targetContext);
+            var targetContextApplicable = ExtendedFiltering_AllowedContexts.ContainsKey(targetContext);
             if (!targetContextApplicable)
                 errors = errors.Append(ERROR_FILTER_VALIDATE_CONTEXT_CONTEXT_NOT_APPLICABLE);
 
-            if (filterProvided && targetContextApplicable)
+            if (filter != null && targetContextApplicable)
             {
+                var targetCtxLvl = ExtendedFiltering_AllowedContexts[targetContext];
+                // E.g. filter has e.g. a Column[Name="*"] segment, while the menu item applies for tables...
+                // TODO: write & align tests
+                if (filter.FilterSections.Any(s => s < targetCtxLvl))
+                    errors = errors.Append(ERROR_FILTER_VALIDATE_LOW_CONTEXT_SEGMENT);
+
                 var targetContextLevel = targetContext.FromStringDescription<ContextLevel>();
                 if (filter.Context < targetContextLevel)
                     errors = errors.Append(ERROR_FILTER_VALIDATE_CONTEXT_FILTER_TARGETS_LOW_CONTEXT);

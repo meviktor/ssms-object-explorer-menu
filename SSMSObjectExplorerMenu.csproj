@@ -108,6 +108,7 @@
     <Compile Include="extendedfiltering\PropertyTypes\NameSchemaProperties.cs" />
     <Compile Include="extendedfiltering\PropertyTypes\Server.cs" />
     <Compile Include="extendedfiltering\PropertyTypes\Table.cs" />
+    <Compile Include="extendedfiltering\ValidationResult.cs" />
     <Compile Include="extensions\DateAndTimeExtensions.cs" />
     <Compile Include="extensions\EnumExtensions.cs" />
     <Compile Include="extensions\Extensions.cs" />
@@ -154,6 +155,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <None Include="extendedfiltering\README.md" />
     <None Include="Scripts.md" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>

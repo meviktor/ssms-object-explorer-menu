@@ -119,7 +119,7 @@ namespace SSMSObjectExplorerMenu
 						continue;
 					}
 
-					if (menuItem.Context == "All" || (menuItem.Context == nodes[0].UrnPath && ExtendedFilteringGuard.IsAllowed(nodeInfo, menuItem.AdditionalFilter)))
+					if (menuItem.Context == "All" || (menuItem.Context == nodes[0].UrnPath && ExtendedFilteringGuard.IsAllowed(nodeInfo, menuItem.AdditionalFilter, menuItem.UseRegularIdentifiers)))
 					{
 						MenuItemInstance instance = new MenuItemInstance(menuItem, nodeInfo, nodes[0].InvariantName);
 

@@ -60,7 +60,7 @@
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.buttonCancel.Location = new System.Drawing.Point(592, 834);
-            this.buttonCancel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonCancel.Margin = new System.Windows.Forms.Padding(4);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(100, 28);
             this.buttonCancel.TabIndex = 6;
@@ -71,9 +71,8 @@
             // 
             this.buttonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOK.Enabled = false;
             this.buttonOK.Location = new System.Drawing.Point(484, 834);
-            this.buttonOK.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonOK.Margin = new System.Windows.Forms.Padding(4);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(100, 28);
             this.buttonOK.TabIndex = 5;
@@ -85,7 +84,7 @@
             this.textName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textName.Location = new System.Drawing.Point(117, 14);
-            this.textName.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.textName.Margin = new System.Windows.Forms.Padding(4);
             this.textName.Name = "textName";
             this.textName.Size = new System.Drawing.Size(573, 22);
             this.textName.TabIndex = 0;
@@ -111,7 +110,7 @@
             "Server/JobServer/JobsFolder",
             "Server/JobServer/Job"});
             this.comboContext.Location = new System.Drawing.Point(117, 46);
-            this.comboContext.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.comboContext.Margin = new System.Windows.Forms.Padding(4);
             this.comboContext.Name = "comboContext";
             this.comboContext.Size = new System.Drawing.Size(573, 24);
             this.comboContext.TabIndex = 1;
@@ -120,7 +119,7 @@
             // 
             this.checkExecute.AutoSize = true;
             this.checkExecute.Location = new System.Drawing.Point(117, 183);
-            this.checkExecute.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkExecute.Margin = new System.Windows.Forms.Padding(4);
             this.checkExecute.Name = "checkExecute";
             this.checkExecute.Size = new System.Drawing.Size(77, 20);
             this.checkExecute.TabIndex = 2;
@@ -132,7 +131,7 @@
             // 
             this.checkConfirm.AutoSize = true;
             this.checkConfirm.Location = new System.Drawing.Point(117, 211);
-            this.checkConfirm.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkConfirm.Margin = new System.Windows.Forms.Padding(4);
             this.checkConfirm.Name = "checkConfirm";
             this.checkConfirm.Size = new System.Drawing.Size(166, 20);
             this.checkConfirm.TabIndex = 3;
@@ -148,7 +147,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textPath.Location = new System.Drawing.Point(119, 452);
-            this.textPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.textPath.Margin = new System.Windows.Forms.Padding(4);
             this.textPath.Multiline = true;
             this.textPath.Name = "textPath";
             this.textPath.ScrollBars = System.Windows.Forms.ScrollBars.Both;
@@ -182,7 +181,7 @@
             // 
             this.radioPath.AutoSize = true;
             this.radioPath.Location = new System.Drawing.Point(195, 425);
-            this.radioPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.radioPath.Margin = new System.Windows.Forms.Padding(4);
             this.radioPath.Name = "radioPath";
             this.radioPath.Size = new System.Drawing.Size(55, 20);
             this.radioPath.TabIndex = 10;
@@ -195,7 +194,7 @@
             this.radioScript.AutoSize = true;
             this.radioScript.Checked = true;
             this.radioScript.Location = new System.Drawing.Point(117, 425);
-            this.radioScript.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.radioScript.Margin = new System.Windows.Forms.Padding(4);
             this.radioScript.Name = "radioScript";
             this.radioScript.Size = new System.Drawing.Size(62, 20);
             this.radioScript.TabIndex = 11;
@@ -208,7 +207,7 @@
             // 
             this.buttonOpen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOpen.Location = new System.Drawing.Point(660, 417);
-            this.buttonOpen.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonOpen.Margin = new System.Windows.Forms.Padding(4);
             this.buttonOpen.Name = "buttonOpen";
             this.buttonOpen.Size = new System.Drawing.Size(34, 28);
             this.buttonOpen.TabIndex = 12;
@@ -243,7 +242,7 @@
             this.listViewUserDefinedParam.FullRowSelect = true;
             this.listViewUserDefinedParam.HideSelection = false;
             this.listViewUserDefinedParam.Location = new System.Drawing.Point(117, 269);
-            this.listViewUserDefinedParam.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.listViewUserDefinedParam.Margin = new System.Windows.Forms.Padding(4);
             this.listViewUserDefinedParam.Name = "listViewUserDefinedParam";
             this.listViewUserDefinedParam.Size = new System.Drawing.Size(465, 146);
             this.listViewUserDefinedParam.TabIndex = 15;
@@ -267,7 +266,7 @@
             // 
             this.buttonAddUserDefinedParam.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonAddUserDefinedParam.Location = new System.Drawing.Point(592, 269);
-            this.buttonAddUserDefinedParam.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonAddUserDefinedParam.Margin = new System.Windows.Forms.Padding(4);
             this.buttonAddUserDefinedParam.Name = "buttonAddUserDefinedParam";
             this.buttonAddUserDefinedParam.Size = new System.Drawing.Size(100, 28);
             this.buttonAddUserDefinedParam.TabIndex = 16;
@@ -280,7 +279,7 @@
             this.buttonRemoveUserDefinedParam.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonRemoveUserDefinedParam.Enabled = false;
             this.buttonRemoveUserDefinedParam.Location = new System.Drawing.Point(594, 341);
-            this.buttonRemoveUserDefinedParam.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonRemoveUserDefinedParam.Margin = new System.Windows.Forms.Padding(4);
             this.buttonRemoveUserDefinedParam.Name = "buttonRemoveUserDefinedParam";
             this.buttonRemoveUserDefinedParam.Size = new System.Drawing.Size(100, 28);
             this.buttonRemoveUserDefinedParam.TabIndex = 18;
@@ -303,7 +302,7 @@
             this.buttonEditUserDefinedParameter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonEditUserDefinedParameter.Enabled = false;
             this.buttonEditUserDefinedParameter.Location = new System.Drawing.Point(592, 305);
-            this.buttonEditUserDefinedParameter.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonEditUserDefinedParameter.Margin = new System.Windows.Forms.Padding(4);
             this.buttonEditUserDefinedParameter.Name = "buttonEditUserDefinedParameter";
             this.buttonEditUserDefinedParameter.Size = new System.Drawing.Size(100, 28);
             this.buttonEditUserDefinedParameter.TabIndex = 20;
@@ -358,7 +357,7 @@
             this.Controls.Add(this.filtersLabel);
             this.Controls.Add(this.advancedFilterControl);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "AddMenuItem";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;

@@ -66,6 +66,15 @@ namespace SSMSObjectExplorerMenu.objects
         [DefaultValue("")]
         public string AdditionalFilter { get; set; } = string.Empty;
 
+        [Category("Menu item")]
+        [DisplayName("Use regular identifiers in additional filter")]
+        [Description(@"
+            If set to true, column-, table-, schema- and database names in the additional filter are validated according the naming rules of SQL Server regular identifiers.
+            Setting this flag to false causes treating these identifiers as if they were delimited (only the length limit and quoutes escaping are tested).
+            Not applicable for server names. They are always validated as they were delimited identifiers.")]
+        [DefaultValue(true)]
+        public bool UseRegularIdentifiers { get; set; } = true;
+
         public MenuItem()
 		{
 			
@@ -99,7 +108,7 @@ namespace SSMSObjectExplorerMenu.objects
 					? null : new MenuItemErrorModel { MenuItemName = Name, ErrorMessages = paramErrors })
 				.Where(e => e != null);
 
-			var additionalFilter = ExtendedFilteringProperties.BuildFromNavigationContext(AdditionalFilter, out var filterBuildErrors);
+			var additionalFilter = ExtendedFilteringProperties.BuildFromNavigationContext(AdditionalFilter, UseRegularIdentifiers, out var filterBuildErrors);
 
             if (additionalFilter != null && !additionalFilter.TryValidateForContext(Context, out var contextErrors))
                 validationErrors = validationErrors.Append(new MenuItemErrorModel { MenuItemName = Name, ErrorMessages = [.. contextErrors] });

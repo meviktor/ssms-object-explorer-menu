@@ -50,7 +50,7 @@ namespace SSMSObjectExplorerMenu
             if (string.IsNullOrWhiteSpace(this.textPath.Text))
                 validationErrors = validationErrors.Append("Path cannot be empty.");
 
-            var filter = ExtendedFilteringProperties.BuildFromNavigationContext($"{this.advancedFilterControl.Filter}", out var buildFilterErrors);
+            var filter = ExtendedFilteringProperties.BuildFromNavigationContext($"{this.advancedFilterControl.Filter}", true, out var buildFilterErrors);
 			if (filter != null && !filter.TryValidateForContext(comboContext.Text, out var contextErrors))
                 validationErrors = validationErrors.Concat(contextErrors);
             else if (filter == null)
